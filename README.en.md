@@ -2,6 +2,6 @@
 
 # logseq-plugin-kanban-board
 
-Create a draggable, editable Kanban view with Logseq data.
+Draggable, editable Kanban view.
 
 ## Usage
