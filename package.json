@@ -6,24 +6,28 @@
     "id": "_sethyuan-logseq-kanban-board",
     "icon": "./icon.png"
   },
-  "browserslist": [
-    "last 2 versions"
-  ],
   "scripts": {
-    "clean": "rm -rf dist",
-    "dev": "mkdir -p dist && cp index-dev.html dist/index.html && preact watch --no-prerender --no-sw",
-    "build": "preact build --no-prerender --no-sw --no-inline-css --no-esm --dest dist && rm dist/push-manifest.json"
+    "build": "rollup -c",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@logseq/libs": "^0.0.14",
+    "jsutils": "^1.12.0",
     "logseq-l10n": "^0.2.0",
     "preact": "^10.13.0",
-    "preact-render-to-string": "^5.2.6",
     "react-beautiful-dnd": "^13.1.1",
+    "react-hook-form": "^7.43.4",
     "reactutils": "^5.12.0"
   },
   "devDependencies": {
-    "preact-cli": "^3.4.5",
-    "preact-cli-svg-loader": "^1.1.0"
+    "@rollup/plugin-alias": "^3.1.9",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-html": "^0.2.4",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-replace": "^5.0.0",
+    "@swc/core": "^1.2.187",
+    "rollup": "^2.74.1",
+    "rollup-plugin-swc3": "^0.3.0"
   }
 }
