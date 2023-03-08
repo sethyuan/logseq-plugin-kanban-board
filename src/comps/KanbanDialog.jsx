@@ -27,35 +27,40 @@ export default function KanbanDialog({ uuid, onConfirm, onClose }) {
     onClose()
   }
 
-  function preventPropagation(e) {
+  function onKeyDown(e) {
     e.stopPropagation()
+    e.preventDefault()
+    if (e.key === "Escape") {
+      onClose()
+    }
   }
 
   return (
     <form
       class="kef-kb-dialog"
-      onKeyDown={preventPropagation}
+      onKeyDown={onKeyDown}
       onSubmit={handleSubmit(confirm)}
     >
       <input
+        class="kef-kb-dialog-input"
         type="text"
         placeholder={t("Block reference")}
         readOnly={!!uuid}
         {...register("blockRef", { required: true })}
       />
-      {errors.blockRef && (
-        <p>{t("${field} is required.", { field: "blockRef" })}</p>
-      )}
+      {errors.blockRef && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
       <input
+        class="kef-kb-dialog-input"
         type="text"
         placeholder={t("Property used to create lists")}
         {...register("property", { required: true })}
       />
-      {errors.property && (
-        <p>{t("${field} is required.", { field: "property" })}</p>
-      )}
-      <button type="submit">{t("OK")}</button>
-      <button onClick={cancel}>{t("Cancel")}</button>
+      {errors.property && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
+      <div>
+        <button class="kef-kb-dialog-btn" type="submit">
+          {t("OK")}
+        </button>
+      </div>
     </form>
   )
 }

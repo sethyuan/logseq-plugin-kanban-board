@@ -86,6 +86,32 @@ function provideStyles() {
     .kef-kb-dialog {
       display: flex;
       flex-direction: column;
+      padding: 10px;
+      background: var(--ls-primary-background-color);
+      box-shadow: 0 0 10px 0 lightgray;
+    }
+    .kef-kb-dialog-input {
+      line-height: 1.5;
+      padding: 5px 8px;
+      margin-bottom: 0.5em;
+      border-color: var(--ls-border-color);
+      width: 300px;
+    }
+    .kef-kb-dialog-input:focus {
+      box-shadow: none;
+    }
+    .kef-kb-dialog-err {
+      font-size: 0.875em;
+      color: var(--ls-error-text-color);
+      margin-top: 0;
+    }
+    .kef-kb-dialog-btn {
+      padding: 0.5em 0.8em;
+      font-size: 0.875em;
+      color: #fff;
+      background-color: rgb(2 132 199);
+      border-radius: 0.3em;
+      margin-top: 8px;
     }
     `,
   })
@@ -118,6 +144,7 @@ function openDialog(uuid) {
     )
     editor.appendChild(dialogContainer)
     dialogContainer.style.display = "block"
+    dialogContainer.querySelector("input")?.focus()
   })
 }
 
