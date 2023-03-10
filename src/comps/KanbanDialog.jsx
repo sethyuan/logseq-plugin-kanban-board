@@ -29,8 +29,8 @@ export default function KanbanDialog({ uuid, onConfirm, onClose }) {
 
   function onKeyDown(e) {
     e.stopPropagation()
-    e.preventDefault()
     if (e.key === "Escape") {
+      e.preventDefault()
       onClose()
     }
   }

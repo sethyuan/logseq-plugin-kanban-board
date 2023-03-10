@@ -2,27 +2,30 @@ import "@logseq/libs"
 import { waitMs } from "jsutils"
 import { setup, t } from "logseq-l10n"
 import { render } from "preact"
+import KanbanBoard from "./comps/KanbanBoard"
 import KanbanDialog from "./comps/KanbanDialog"
+import { persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
 
 let dialogContainer
 let dialogContainerParent
+let offHooks = {}
 
 async function main() {
   await setup({ builtinTranslations: { "zh-CN": zhCN } })
 
   provideStyles()
 
-  logseq.useSettingsSchema([
-    {
-      key: "openInSidebar",
-      type: "boolean",
-      default: false,
-      description: t("Click on the card opens it in the sidebar."),
-    },
-  ])
+  // logseq.useSettingsSchema([
+  //   {
+  //     key: "openInSidebar",
+  //     type: "boolean",
+  //     default: false,
+  //     description: t("Click on the card opens it in the sidebar."),
+  //   },
+  // ])
 
   logseq.provideUI({
     key: DIALOG_ID,
@@ -54,6 +57,7 @@ async function main() {
     async ({ uuid }) => {
       try {
         const { property } = await openDialog(uuid)
+        await persistBlockUUID(uuid)
         await logseq.Editor.insertBlock(
           uuid,
           `{{renderer :kboard, ${uuid}, ${property}}}`,
@@ -67,7 +71,11 @@ async function main() {
     },
   )
 
-  // logseq.beforeunload(async () => {})
+  logseq.beforeunload(async () => {
+    for (const off of Object.values(offHooks)) {
+      off?.()
+    }
+  })
 
   console.log("#kanban-board loaded")
 }
@@ -95,7 +103,10 @@ function provideStyles() {
       padding: 5px 8px;
       margin-bottom: 0.5em;
       border-color: var(--ls-border-color);
-      width: 300px;
+      width: 360px;
+    }
+    .kef-kb-dialog-input::placeholder {
+      opacity: 0.5;
     }
     .kef-kb-dialog-input:focus {
       box-shadow: none;
@@ -113,13 +124,132 @@ function provideStyles() {
       border-radius: 0.3em;
       margin-top: 8px;
     }
+
+    .kef-kb-board {
+      display: flex;
+      padding: 2em 1.5em;
+      background-color: var(--ls-active-primary-color);
+      width: 100%;
+      overflow-x: auto;
+    }
+    .kef-kb-list {
+      flex: 0 0 auto;
+      overflow-y: auto;
+      width: 260px;
+      max-height: calc(100vh - 44px * 2);
+      margin-right: 15px;
+      padding: 0 8px 10px;
+      background-color: var(--ls-secondary-background-color);
+      box-shadow: 2px 3px 6px 0 #88888894;
+    }
+    .kef-kb-list:last-child {
+      margin-right: 0;
+    }
+    .kef-kb-list-name {
+      margin: 0;
+      font-size: 1.25em;
+      font-weight: 600;
+      line-height: 2;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .kef-kb-card {
+      background-color: var(--ls-primary-background-color);
+      margin-bottom: 8px;
+      padding: 8px;
+      box-shadow: 0px 0px 2px 0 var(--ls-block-bullet-border-color);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .kef-kb-card:hover {
+      box-shadow: 0px 0px 2px 2px var(--ls-block-bullet-border-color);
+    }
+    .kef-kb-card-content {
+    }
+    .kef-kb-card-tags {
+      display: flex;
+      flex-flow: row wrap;
+      margin-top: 0.25em;
+    }
+    .kef-kb-card-tag {
+      flex: 0 0 auto;
+      font-size: 0.625em;
+      margin-right: 0.5em;
+      margin-bottom: 0.25em;
+      background: var(--ls-active-secondary-color);
+      border-radius: 2px;
+      padding: 1px 7px;
+      color: #fff;
+    }
+    .kef-kb-card-tag:last-child {
+      margin-right: 0;
+    }
+    .kef-kb-card-props {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      margin-top: 0.3em;
+      background-color: var(--ls-secondary-background-color);
+      padding: 4px 6px;
+    }
+    .kef-kb-card-props-key {
+      font-size: 0.75em;
+      margin-right: 1em;
+      font-weight: 600;
+    }
+    .kef-kb-card-props-val {
+      font-size: 0.75em;
+    }
     `,
   })
 }
 
 async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
-  // TODO
-  console.log("renderer", slot, args, uuid)
+  if (args.length === 0) return
+  const type = args[0].trim()
+  if (type !== ":kboard") return
+
+  const blockRefArg = args[1].trim()
+  const blockRef = blockRefArg.startsWith("((")
+    ? blockRefArg.substring(2, blockRefArg.length - 2)
+    : blockRefArg
+  if (!blockRef) return
+
+  const property = args[2].trim()
+  if (!property) return
+
+  const slotEl = parent.document.getElementById(slot)
+  if (!slotEl) return
+  const renderered = slotEl?.childElementCount > 0
+  if (renderered) return
+
+  slotEl.style.width = "100%"
+
+  const key = `kef-kb-${slot}`
+  logseq.provideUI({
+    key,
+    slot,
+    template: `<div id="${key}" style="width: 100%"></div>`,
+    reset: true,
+    style: {
+      cursor: "default",
+      width: "100%",
+    },
+  })
+
+  setTimeout(async () => {
+    const rootBlock = await logseq.Editor.getBlock(blockRef)
+    const offHook = watchBlockChildrenChange(
+      rootBlock.id,
+      key,
+      (blocks, txData, txMeta) => {
+        renderKanban(key, blockRef, property)
+      },
+    )
+    offHooks[rootBlock.id] = offHook
+
+    renderKanban(key, blockRef, property)
+  }, 0)
 }
 
 function openDialog(uuid) {
@@ -151,6 +281,76 @@ function openDialog(uuid) {
 function closeDialog() {
   dialogContainer.style.display = "none"
   dialogContainerParent.appendChild(dialogContainer)
+}
+
+function watchBlockChildrenChange(id, elID, callback) {
+  return logseq.DB.onChanged(({ blocks, txData, txMeta }) => {
+    const rendererEl = parent.document.getElementById(elID)
+    if (rendererEl == null || !rendererEl.isConnected) {
+      offHooks[id]?.()
+      delete offHooks[id]
+      return
+    }
+
+    if (
+      (txMeta?.outlinerOp === "saveBlock" ||
+        txMeta?.outlinerOp === "deleteBlocks") &&
+      blocks.some((block) => block.parent?.id === id)
+    ) {
+      callback(
+        blocks.filter((block) => block.parent?.id === id),
+        txData,
+        txMeta,
+      )
+    }
+  })
+}
+
+async function renderKanban(id, boardUUID, property) {
+  const el = parent.document.getElementById(id)
+  if (el == null || !el.isConnected) return
+
+  const data = await getBoardData(boardUUID, property)
+  render(<KanbanBoard data={data} property={property} />, el)
+}
+
+async function getBoardData(boardUUID, property) {
+  const blocks = await getChildren(boardUUID, property)
+  const lists = groupBy(
+    blocks,
+    (block) => block["properties-text-values"][property],
+  )
+  return { lists }
+}
+
+async function getChildren(uuid, property) {
+  const ret = (
+    await logseq.DB.datascriptQuery(
+      `[:find (pull ?b [*])
+       :in $ ?uuid ?prop
+       :where
+       [?r :block/uuid ?uuid]
+       [?b :block/parent ?r]
+       [?b :block/properties ?props]
+       [(get ?props ?prop)]]`,
+      `#uuid "${uuid}"`,
+      `:${property}`,
+    )
+  ).flat()
+  return ret
+}
+
+function groupBy(arr, selector) {
+  const ret = {}
+  for (const x of arr) {
+    const key = selector(x)
+    if (!key) continue
+    if (ret[key] == null) {
+      ret[key] = []
+    }
+    ret[key].push(x)
+  }
+  return ret
 }
 
 logseq.ready(main).catch(console.error)

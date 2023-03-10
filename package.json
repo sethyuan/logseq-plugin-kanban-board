@@ -14,6 +14,7 @@
     "@logseq/libs": "^0.0.14",
     "jsutils": "^1.12.0",
     "logseq-l10n": "^0.2.0",
+    "marked": "^4.2.12",
     "preact": "^10.13.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-hook-form": "^7.43.4",
