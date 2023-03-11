@@ -1,37 +1,39 @@
-import { Draggable, Droppable } from "react-beautiful-dnd"
+import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
+import KanbanCard from "./KanbanCard"
 
-export default function KanbanList({ name, blocks, property }) {
+export default function KanbanList({ name, blocks, property, index }) {
   return (
-    <div class="kef-kb-list">
-      <div class="kef-kb-list-name">{name}</div>
-      <Droppable droppableId={`list-${name}`}>
-        {(provided, snapshot) => (
-          <div ref={provided.innerRef} {...provided.droppableProps}>
-            {blocks?.map((block, i) => (
-              <Draggable
-                key={block.id}
-                draggableId={`card-${block.id}`}
-                index={i}
-              >
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                  >
-                    <KanbanCard
-                      key={block.id}
-                      block={block}
-                      property={property}
-                    />
-                  </div>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
+    <Draggable draggableId={name} index={index}>
+      {(provided, snapshot) => (
+        <div
+          class="kef-kb-list"
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+        >
+          <div class="kef-kb-list-name" {...provided.dragHandleProps}>
+            {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
           </div>
-        )}
-      </Droppable>
-    </div>
+          <Droppable droppableId={name} type="CARD">
+            {(provided, snapshot) => (
+              <div
+                class="kef-kb-list-cards"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {blocks?.map((block, i) => (
+                  <KanbanCard
+                    key={block.id}
+                    block={block}
+                    property={property}
+                    index={i}
+                  />
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </div>
+      )}
+    </Draggable>
   )
 }

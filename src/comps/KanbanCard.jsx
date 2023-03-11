@@ -1,7 +1,8 @@
 import { useEffect, useState } from "preact/hooks"
+import { Draggable } from "../../deps/react-beautiful-dnd"
 import { parseContent } from "../libs/utils"
 
-export default function KanbanCard({ block, property }) {
+export default function KanbanCard({ block, property, index }) {
   const [data, setData] = useState()
 
   useEffect(() => {
@@ -21,25 +22,35 @@ export default function KanbanCard({ block, property }) {
   const properties = data.properties?.filter(([name]) => name !== property)
 
   return (
-    <div class="kef-kb-card" onClick={openBlock}>
-      <div class="kef-kb-card-content">{data.content}</div>
-      <div class="kef-kb-card-tags">
-        {data.tags.map((tag) => (
-          <div key={tag} class="kef-kb-card-tag">
-            {tag}
+    <Draggable draggableId={`${block.id}`} index={index}>
+      {(provided, snapshot) => (
+        <div
+          class="kef-kb-card"
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          onClick={openBlock}
+        >
+          <div class="kef-kb-card-content">{data.content}</div>
+          <div class="kef-kb-card-tags">
+            {data.tags.map((tag) => (
+              <div key={tag} class="kef-kb-card-tag">
+                {tag}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {properties?.length > 0 && (
-        <div class="kef-kb-card-props">
-          {properties.map(([name, value]) => (
-            <>
-              <div class="kef-kb-card-props-key">{name}</div>
-              <div class="kef-kb-card-props-val">{value}</div>
-            </>
-          ))}
+          {properties?.length > 0 && (
+            <div class="kef-kb-card-props">
+              {properties.map(([name, value]) => (
+                <>
+                  <div class="kef-kb-card-props-key">{name}</div>
+                  <div class="kef-kb-card-props-val">{value}</div>
+                </>
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </Draggable>
   )
 }

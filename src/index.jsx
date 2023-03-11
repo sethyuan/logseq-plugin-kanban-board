@@ -2,6 +2,7 @@ import "@logseq/libs"
 import { waitMs } from "jsutils"
 import { setup, t } from "logseq-l10n"
 import { render } from "preact"
+import { debounce } from "rambdax"
 import KanbanBoard from "./comps/KanbanBoard"
 import KanbanDialog from "./comps/KanbanDialog"
 import { persistBlockUUID } from "./libs/utils"
@@ -127,18 +128,16 @@ function provideStyles() {
 
     .kef-kb-board {
       display: flex;
-      padding: 2em 1.5em;
+      padding: 1.5em;
       background-color: var(--ls-active-primary-color);
       width: 100%;
       overflow-x: auto;
     }
     .kef-kb-list {
       flex: 0 0 auto;
-      overflow-y: auto;
       width: 260px;
-      max-height: calc(100vh - 44px * 2);
       margin-right: 15px;
-      padding: 0 8px 10px;
+      padding-bottom: 10px;
       background-color: var(--ls-secondary-background-color);
       box-shadow: 2px 3px 6px 0 #88888894;
     }
@@ -147,12 +146,18 @@ function provideStyles() {
     }
     .kef-kb-list-name {
       margin: 0;
+      padding: 0 8px;
       font-size: 1.25em;
       font-weight: 600;
       line-height: 2;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+    .kef-kb-list-cards {
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      padding: 0 8px;
     }
     .kef-kb-card {
       background-color: var(--ls-primary-background-color);
@@ -164,8 +169,6 @@ function provideStyles() {
     }
     .kef-kb-card:hover {
       box-shadow: 0px 0px 2px 2px var(--ls-block-bullet-border-color);
-    }
-    .kef-kb-card-content {
     }
     .kef-kb-card-tags {
       display: flex;
@@ -190,7 +193,7 @@ function provideStyles() {
       grid-template-columns: auto 1fr;
       margin-top: 0.3em;
       background-color: var(--ls-secondary-background-color);
-      padding: 4px 6px;
+      padding: 5px 6px;
     }
     .kef-kb-card-props-key {
       font-size: 0.75em;
@@ -230,7 +233,6 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
     key,
     slot,
     template: `<div id="${key}" style="width: 100%"></div>`,
-    reset: true,
     style: {
       cursor: "default",
       width: "100%",
@@ -242,9 +244,9 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
     const offHook = watchBlockChildrenChange(
       rootBlock.id,
       key,
-      (blocks, txData, txMeta) => {
+      debounce((blocks, txData, txMeta) => {
         renderKanban(key, blockRef, property)
-      },
+      }, 300),
     )
     offHooks[rootBlock.id] = offHook
 
@@ -293,8 +295,8 @@ function watchBlockChildrenChange(id, elID, callback) {
     }
 
     if (
-      (txMeta?.outlinerOp === "saveBlock" ||
-        txMeta?.outlinerOp === "deleteBlocks") &&
+      txMeta &&
+      txMeta.outlinerOp !== "insertBlock" &&
       blocks.some((block) => block.parent?.id === id)
     ) {
       callback(
@@ -311,20 +313,21 @@ async function renderKanban(id, boardUUID, property) {
   if (el == null || !el.isConnected) return
 
   const data = await getBoardData(boardUUID, property)
-  render(<KanbanBoard data={data} property={property} />, el)
+  render(<KanbanBoard board={data} property={property} />, el)
 }
 
 async function getBoardData(boardUUID, property) {
   const blocks = await getChildren(boardUUID, property)
-  const lists = groupBy(
-    blocks,
-    (block) => block["properties-text-values"][property],
+  const lists = groupBy(blocks, (block) =>
+    Array.isArray(block.properties[property])
+      ? `[[${block.properties[property][0]}]]`
+      : block.properties[property],
   )
   return { lists }
 }
 
 async function getChildren(uuid, property) {
-  const ret = (
+  const dbResult = (
     await logseq.DB.datascriptQuery(
       `[:find (pull ?b [*])
        :in $ ?uuid ?prop
@@ -337,7 +340,16 @@ async function getChildren(uuid, property) {
       `:${property}`,
     )
   ).flat()
-  return ret
+  const map = new Map()
+  for (const block of dbResult) {
+    map.set(block.left.id, block)
+  }
+  for (let i = 0, id = dbResult[0].parent.id; i < dbResult.length; i++) {
+    const b = map.get(id)
+    dbResult[i] = b
+    id = b.id
+  }
+  return dbResult
 }
 
 function groupBy(arr, selector) {

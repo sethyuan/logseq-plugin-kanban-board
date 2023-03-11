@@ -354,6 +354,11 @@ hoist-non-react-statics@^3.3.0, hoist-non-react-statics@^3.3.2:
   dependencies:
     react-is "^16.7.0"
 
+immer@^9.0.19:
+  version "9.0.19"
+  resolved "https://registry.npmmirror.com/immer/-/immer-9.0.19.tgz#67fb97310555690b5f9cd8380d38fc0aabb6b38b"
+  integrity sha512-eY+Y0qcsB4TZKwgQzLaE/lqYMlKhv5J9dyd2RhhtGhNo2njPXDqU9XPfcNfa3MIDsdtZt5KlkIsirlo4dHsWdQ==
+
 inflight@^1.0.4:
   version "1.0.6"
   resolved "https://registry.npmmirror.com/inflight/-/inflight-1.0.6.tgz#49bd6331d7d02d0c09bc910a1075ba8165b56df9"
@@ -537,6 +542,11 @@ raf-schd@^4.0.2:
   version "4.0.3"
   resolved "https://registry.npmmirror.com/raf-schd/-/raf-schd-4.0.3.tgz#5d6c34ef46f8b2a0e880a8fcdb743efc5bfdbc1a"
   integrity sha512-tQkJl2GRWh83ui2DiPTJz9wEiMN20syf+5oKfB03yYP7ioZcJwsIK8FjrtLwH1m7C7e+Tt2yYBlrOpdT+dyeIQ==
+
+rambdax@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.npmmirror.com/rambdax/-/rambdax-9.0.0.tgz#503c75fbb83f8141ef04af00508fac0433615fc0"
+  integrity sha512-8vcixAlXoFNdCoa35nDzLqntyimVMiQpWUhQgMkOb/pdxZULN+8d9l2kosEQ6Aq0awpI2m+u973cSlg2UrAbyw==
 
 react-beautiful-dnd@^13.1.1:
   version "13.1.1"
