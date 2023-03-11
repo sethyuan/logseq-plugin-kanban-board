@@ -141,9 +141,6 @@ function provideStyles() {
       background-color: var(--ls-secondary-background-color);
       box-shadow: 2px 3px 6px 0 #88888894;
     }
-    .kef-kb-list:last-child {
-      margin-right: 0;
-    }
     .kef-kb-list-name {
       margin: 0;
       padding: 0 8px;

@@ -1,6 +1,10 @@
 import produce from "immer"
 import { useEffect, useState } from "preact/hooks"
-import { DragDropContext, Droppable } from "../../deps/react-beautiful-dnd"
+import {
+  DragDropContext,
+  Droppable,
+  useMouseSensor,
+} from "../../deps/react-beautiful-dnd"
 import KanbanList from "./KanbanList"
 
 export default function KanbanBoard({ board, property }) {
@@ -11,8 +15,6 @@ export default function KanbanBoard({ board, property }) {
   }, [board])
 
   function onDragEnd(e) {
-    console.log(e)
-
     if (!e.destination) return
     if (
       e.source.droppableId === e.destination.droppableId &&
@@ -77,13 +79,49 @@ export default function KanbanBoard({ board, property }) {
   }
 
   async function moveList(e) {
-    // TODO
+    const { source: src, destination: dest } = e
+    const lists = data.lists
+
+    const keys = Object.keys(lists)
+    if (src.index < dest.index) {
+      keys.splice(dest.index + 1, 0, keys[src.index])
+      keys.splice(src.index, 1)
+    } else {
+      const key = keys.splice(src.index, 1)
+      keys.splice(dest.index, 0, ...key)
+    }
+    setData({
+      lists: keys.reduce((obj, key) => {
+        obj[key] = lists[key]
+        return obj
+      }, {}),
+    })
+
+    const ks = Object.keys(lists)
+    const srcBlock = lists[ks[src.index]][0]
+    if (src.index < dest.index) {
+      for (let i = src.index + 1; i <= dest.index; i++) {
+        const destBlock = lists[ks[i]][0]
+        await logseq.Editor.moveBlock(destBlock.uuid, srcBlock.uuid, {
+          before: true,
+        })
+      }
+    } else {
+      const destBlock = lists[ks[dest.index]][0]
+      await logseq.Editor.moveBlock(srcBlock.uuid, destBlock.uuid, {
+        before: true,
+      })
+    }
   }
 
   if (data?.lists == null) return null
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext
+      onDragEnd={onDragEnd}
+      enableDefaultSensors={false}
+      sensors={[useMouseSensor]}
+    >
       <Droppable droppableId="board" direction="horizontal" type="LIST">
         {(provided, snapshot) => (
           <div
