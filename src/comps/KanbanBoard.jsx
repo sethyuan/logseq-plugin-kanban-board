@@ -1,10 +1,11 @@
 import produce from "immer"
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useMemo, useState } from "preact/hooks"
 import {
   DragDropContext,
   Droppable,
   useMouseSensor,
 } from "../../deps/react-beautiful-dnd"
+import { BoardContext } from "../libs/contexts"
 import KanbanList from "./KanbanList"
 
 export default function KanbanBoard({ board, property }) {
@@ -114,6 +115,20 @@ export default function KanbanBoard({ board, property }) {
     }
   }
 
+  const contextValue = useMemo(
+    () => ({
+      async addCard(listName, text) {
+        const list = data.lists[listName]
+        const refBlock = list[list.length - 1]
+        const content = `${text}\n${property}:: ${listName}`
+        await logseq.Editor.insertBlock(refBlock.uuid, content, {
+          sibling: true,
+        })
+      },
+    }),
+    [],
+  )
+
   if (data?.lists == null) return null
 
   return (
@@ -122,26 +137,28 @@ export default function KanbanBoard({ board, property }) {
       enableDefaultSensors={false}
       sensors={[useMouseSensor]}
     >
-      <Droppable droppableId="board" direction="horizontal" type="LIST">
-        {(provided, snapshot) => (
-          <div
-            class="kef-kb-board"
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {Object.entries(data.lists).map(([name, blocks], i) => (
-              <KanbanList
-                key={name}
-                name={name}
-                blocks={blocks}
-                property={property}
-                index={i}
-              />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
+      <BoardContext.Provider value={contextValue}>
+        <Droppable droppableId="board" direction="horizontal" type="LIST">
+          {(provided, snapshot) => (
+            <div
+              class="kef-kb-board"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {Object.entries(data.lists).map(([name, blocks], i) => (
+                <KanbanList
+                  key={name}
+                  name={name}
+                  blocks={blocks}
+                  property={property}
+                  index={i}
+                />
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </BoardContext.Provider>
     </DragDropContext>
   )
 }

@@ -200,6 +200,34 @@ function provideStyles() {
     .kef-kb-card-props-val {
       font-size: 0.75em;
     }
+    .kef-kb-addone {
+      display: flex;
+      align-items: center;
+      padding: 0.25em 8px;
+    }
+    .kef-kb-addone-btn {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .kef-kb-addone-input {
+      flex: 1 1 auto;
+      line-height: 1.5;
+      padding: 5px 8px;
+      border-color: var(--ls-border-color);
+      background-color: var(--ls-primary-background-color) !important;
+    }
+    .kef-kb-addone-input:focus {
+      box-shadow: none;
+    }
+    .kef-kb-addone-input-btn {
+      flex: 0 0 auto;
+      padding: 0 0.25em;
+      cursor: pointer;
+    }
+    .kef-kb-addone-input-btn:hover {
+      color: var(--ls-active-secondary-color);
+    }
     `,
   })
 }

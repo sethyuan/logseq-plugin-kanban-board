@@ -1,4 +1,5 @@
 import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
+import KanbanAddOne from "./KanbanAddOne"
 import KanbanCard from "./KanbanCard"
 
 export default function KanbanList({ name, blocks, property, index }) {
@@ -13,6 +14,7 @@ export default function KanbanList({ name, blocks, property, index }) {
           <div class="kef-kb-list-name" {...provided.dragHandleProps}>
             {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
           </div>
+
           <Droppable droppableId={name} type="CARD">
             {(provided, snapshot) => (
               <div
@@ -32,6 +34,8 @@ export default function KanbanList({ name, blocks, property, index }) {
               </div>
             )}
           </Droppable>
+
+          <KanbanAddOne list={name} />
         </div>
       )}
     </Draggable>
