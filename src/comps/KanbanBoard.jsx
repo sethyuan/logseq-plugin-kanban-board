@@ -126,7 +126,7 @@ export default function KanbanBoard({ board, property }) {
         })
       },
     }),
-    [],
+    [data],
   )
 
   if (data?.lists == null) return null

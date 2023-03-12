@@ -2,6 +2,8 @@ import { useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
 import { parseContent } from "../libs/utils"
 
+const HIDDEN_PROP_NAMES = new Set(["id", "heading"])
+
 export default function KanbanCard({ block, property, index }) {
   const [data, setData] = useState()
 
@@ -19,7 +21,9 @@ export default function KanbanCard({ block, property, index }) {
     logseq.Editor.openInRightSidebar(block.uuid)
   }
 
-  const properties = data.properties?.filter(([name]) => name !== property)
+  const properties = data.properties?.filter(
+    ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
+  )
 
   return (
     <Draggable draggableId={`${block.id}`} index={index}>

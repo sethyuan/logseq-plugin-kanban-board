@@ -19,15 +19,6 @@ async function main() {
 
   provideStyles()
 
-  // logseq.useSettingsSchema([
-  //   {
-  //     key: "openInSidebar",
-  //     type: "boolean",
-  //     default: false,
-  //     description: t("Click on the card opens it in the sidebar."),
-  //   },
-  // ])
-
   logseq.provideUI({
     key: DIALOG_ID,
     path: "#app-container",
@@ -128,7 +119,7 @@ function provideStyles() {
 
     .kef-kb-board {
       display: flex;
-      padding: 1.5em;
+      padding: 1.5em calc(1.5em - 15px) 1.5em 1.5em;
       background-color: var(--ls-active-primary-color);
       width: 100%;
       overflow-x: auto;
@@ -153,7 +144,7 @@ function provideStyles() {
     }
     .kef-kb-list-cards {
       overflow-y: auto;
-      max-height: calc(100vh - 200px);
+      max-height: calc(100vh - 300px);
       padding: 0 8px;
     }
     .kef-kb-card {
@@ -216,6 +207,7 @@ function provideStyles() {
       padding: 5px 8px;
       border-color: var(--ls-border-color);
       background-color: var(--ls-primary-background-color) !important;
+      border-radius: 0.25em;
     }
     .kef-kb-addone-input:focus {
       box-shadow: none;
