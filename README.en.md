@@ -6,6 +6,8 @@ Draggable, editable Kanban view.
 
 ## Usage
 
+https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8cb0-159be587087f.mp4
+
 ## Features
 
 - Create Kanban boards using Logseq list data.
