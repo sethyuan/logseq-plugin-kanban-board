@@ -44,6 +44,31 @@ async function main() {
     }
   })
 
+  logseq.Editor.registerSlashCommand("Kanban Board (Sample)", async () => {
+    const currentBlock = await logseq.Editor.getCurrentBlock()
+    const uuid = await logseq.Editor.newBlockUUID()
+    await logseq.Editor.insertAtEditingCursor(
+      `{{renderer :kboard, ${uuid}, status}}`,
+    )
+    const boardRoot = await logseq.Editor.insertBlock(
+      currentBlock.uuid,
+      "Sample Kanban",
+      { sibling: true, customUUID: uuid },
+    )
+    await logseq.Editor.insertBatchBlock(
+      boardRoot.uuid,
+      [
+        { content: "item a\nstatus:: TODO" },
+        { content: "placeholder #.kboard-placeholder\nstatus:: TODO" },
+        { content: "item b\nstatus:: Doing" },
+        { content: "placeholder #.kboard-placeholder\nstatus:: Doing" },
+        { content: "item c\nstatus:: Done" },
+        { content: "placeholder #.kboard-placeholder\nstatus:: Done" },
+      ],
+      { sibling: false },
+    )
+  })
+
   logseq.Editor.registerBlockContextMenuItem(
     t("Kanban Board"),
     async ({ uuid }) => {
