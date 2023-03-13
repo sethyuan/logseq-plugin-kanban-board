@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
 import { parseContent } from "../libs/utils"
 
-const HIDDEN_PROP_NAMES = new Set(["id", "heading"])
+const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed"])
 
 export default function KanbanCard({ block, property, index }) {
   const [data, setData] = useState()
@@ -19,6 +19,14 @@ export default function KanbanCard({ block, property, index }) {
 
   function openBlock() {
     logseq.Editor.openInRightSidebar(block.uuid)
+  }
+
+  async function openTag(e, name) {
+    e.stopPropagation()
+    const tagUUID = (await logseq.Editor.getPage(name))?.uuid
+    if (tagUUID) {
+      logseq.Editor.openInRightSidebar(tagUUID)
+    }
   }
 
   const properties = data.properties?.filter(
@@ -38,7 +46,11 @@ export default function KanbanCard({ block, property, index }) {
           <div class="kef-kb-card-content">{data.content}</div>
           <div class="kef-kb-card-tags">
             {data.tags.map((tag) => (
-              <div key={tag} class="kef-kb-card-tag">
+              <div
+                key={tag}
+                class="kef-kb-card-tag"
+                onClick={(e) => openTag(e, tag)}
+              >
                 {tag}
               </div>
             ))}

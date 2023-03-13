@@ -172,6 +172,7 @@ function provideStyles() {
       border-radius: 2px;
       padding: 1px 7px;
       color: #fff;
+      cursor: pointer;
     }
     .kef-kb-card-tag:last-child {
       margin-right: 0;
