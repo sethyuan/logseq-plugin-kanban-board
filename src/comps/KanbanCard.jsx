@@ -1,11 +1,13 @@
 import { useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
 import { parseContent } from "../libs/utils"
+import Menu from "./Menu"
 
 const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed"])
 
 export default function KanbanCard({ block, property, index }) {
   const [data, setData] = useState()
+  const [menuData, setMenuData] = useState({ visible: false })
 
   useEffect(() => {
     if (block == null) return
@@ -30,6 +32,22 @@ export default function KanbanCard({ block, property, index }) {
     }
   }
 
+  function onMouseDown(e) {
+    e.stopPropagation()
+    if (e.button === 2) {
+      e.preventDefault()
+      setMenuData({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+      })
+    }
+  }
+
+  function closeMenu() {
+    setMenuData((old) => ({ ...old, visible: false }))
+  }
+
   const properties = data.properties?.filter(
     ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
   )
@@ -43,6 +61,7 @@ export default function KanbanCard({ block, property, index }) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={openBlock}
+          onMouseDown={onMouseDown}
         >
           <div class="kef-kb-card-content">{data.content}</div>
           <div class="kef-kb-card-tags">
@@ -65,6 +84,12 @@ export default function KanbanCard({ block, property, index }) {
                 </>
               ))}
             </div>
+          )}
+
+          {menuData.visible && (
+            <Menu x={menuData.x} y={menuData.y} onClose={closeMenu}>
+              <p>Hello</p>
+            </Menu>
           )}
         </div>
       )}

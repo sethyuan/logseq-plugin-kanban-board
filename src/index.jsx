@@ -148,6 +148,7 @@ function provideStyles() {
       background-color: var(--ls-active-primary-color);
       width: 100%;
       overflow-x: auto;
+      overflow-y: visible;
     }
     .kef-kb-list {
       flex: 0 0 auto;
@@ -245,6 +246,21 @@ function provideStyles() {
     }
     .kef-kb-addone-input-btn:hover {
       color: var(--ls-active-secondary-color);
+    }
+    .kef-kb-menu-overlay {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(0 0 0 / 0);
+    }
+    .kef-kb-menu {
+      position: absolute;
+      width: 300px;
+      height: 200px;
+      box-shadow: 2px 3px 6px 0 #88888894;
+      background: var(--ls-primary-background-color);
     }
     `,
   })
