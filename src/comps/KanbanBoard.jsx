@@ -123,6 +123,7 @@ export default function KanbanBoard({ board, property }) {
         const content = `${text}\n${property}:: ${listName}`
         await logseq.Editor.insertBlock(refBlock.uuid, content, {
           sibling: true,
+          before: refBlock.content.includes(".kboard-placeholder"),
         })
       },
     }),

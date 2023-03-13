@@ -411,7 +411,7 @@ function groupBy(arr, selector) {
 
 async function maintainPlaceholders(lists, property) {
   for (const [name, list] of Object.entries(lists)) {
-    if (!list[list.length - 1].content.includes(".kboard-placeholder")) {
+    if (!list.some((block) => block.content.includes(".kboard-placeholder"))) {
       await logseq.Editor.insertBlock(
         list[list.length - 1].uuid,
         `placeholder #.kboard-placeholder\n${property}:: ${name}`,
