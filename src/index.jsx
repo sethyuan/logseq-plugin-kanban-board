@@ -363,7 +363,7 @@ async function getChildren(uuid, property) {
     map.set(block.left.id, block)
   }
   for (let i = 0, id = dbResult[0].parent.id; i < dbResult.length; i++) {
-    const b = map.get(id)
+    const b = map.get(id) ?? dbResult[i]
     dbResult[i] = b
     id = b.id
   }
