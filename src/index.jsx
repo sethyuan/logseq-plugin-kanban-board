@@ -11,7 +11,6 @@ import zhCN from "./translations/zh-CN.json"
 const DIALOG_ID = "kef-kb-dialog"
 
 let dialogContainer
-let dialogContainerParent
 let offHooks = {}
 
 async function main() {
@@ -28,15 +27,16 @@ async function main() {
   // Let div root element get generated first.
   setTimeout(async () => {
     dialogContainer = parent.document.getElementById(DIALOG_ID)
-    dialogContainerParent = dialogContainer.parentNode
   }, 0)
 
   logseq.App.onMacroRendererSlotted(kanbanRenderer)
 
   logseq.Editor.registerSlashCommand("Kanban Board", async () => {
     try {
+      const curr = await logseq.Editor.getCurrentBlock()
       const { blockRef, property } = await openDialog()
-      await logseq.Editor.insertAtEditingCursor(
+      await logseq.Editor.updateBlock(
+        curr.uuid,
         `{{renderer :kboard, ${blockRef}, ${property}}}`,
       )
     } catch {
@@ -101,10 +101,12 @@ function provideStyles() {
   logseq.provideStyle({
     key: "kef-kb",
     style: `
-    #${DIALOG_ID} {
-      position: absolute;
-      top: 32px;
+    .kef-kb-dialog-overlay {
+      position: fixed;
+      top: 0;
+      bottom: 0;
       left: 0;
+      right: 0;
       z-index: var(--ls-z-index-level-2);
       display: none;
     }
@@ -114,6 +116,7 @@ function provideStyles() {
       padding: 10px;
       background: var(--ls-primary-background-color);
       box-shadow: 0 0 10px 0 lightgray;
+      position: absolute;
     }
     .kef-kb-dialog-input {
       line-height: 1.5;
@@ -298,14 +301,17 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
 }
 
 function openDialog(uuid) {
-  const editor = uuid
-    ? parent.document.getElementById(`block-content-${uuid}`)
-    : parent.document.activeElement?.closest(".block-editor")
   return new Promise((resolve, reject) => {
+    const editor = uuid
+      ? parent.document.getElementById(`block-content-${uuid}`)
+      : parent.document.activeElement?.closest(".block-editor")
     if (editor == null) reject()
+    const rect = editor.getBoundingClientRect()
     render(
       <KanbanDialog
+        visible
         uuid={uuid}
+        rect={rect}
         onConfirm={(blockRef, property) => {
           closeDialog()
           resolve({ blockRef, property })
@@ -317,15 +323,11 @@ function openDialog(uuid) {
       />,
       dialogContainer,
     )
-    editor.appendChild(dialogContainer)
-    dialogContainer.style.display = "block"
-    dialogContainer.querySelector("input")?.focus()
   })
 }
 
 function closeDialog() {
-  dialogContainer.style.display = "none"
-  dialogContainerParent.appendChild(dialogContainer)
+  render(<KanbanBoard visible={false} />, dialogContainer)
 }
 
 function watchBlockChildrenChange(id, elID, callback) {
