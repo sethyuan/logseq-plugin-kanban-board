@@ -145,7 +145,7 @@ function provideStyles() {
     .kef-kb-list-cards {
       overflow-y: auto;
       max-height: calc(100vh - 300px);
-      padding: 0 8px;
+      padding: 4px 8px;
     }
     .kef-kb-card {
       background-color: var(--ls-primary-background-color);
@@ -331,6 +331,7 @@ async function renderKanban(id, boardUUID, property) {
   if (el == null || !el.isConnected) return
 
   const data = await getBoardData(boardUUID, property)
+  await maintainPlaceholders(data.lists, property)
   render(<KanbanBoard board={data} property={property} />, el)
 }
 
@@ -381,6 +382,18 @@ function groupBy(arr, selector) {
     ret[key].push(x)
   }
   return ret
+}
+
+async function maintainPlaceholders(lists, property) {
+  for (const [name, list] of Object.entries(lists)) {
+    if (!list[list.length - 1].content.includes(".kboard-placeholder")) {
+      await logseq.Editor.insertBlock(
+        list[list.length - 1].uuid,
+        `placeholder #.kboard-placeholder\n${property}:: ${name}`,
+        { sibling: true },
+      )
+    }
+  }
 }
 
 logseq.ready(main).catch(console.error)

@@ -15,7 +15,8 @@ export default function KanbanCard({ block, property, index }) {
     })()
   }, [block])
 
-  if (data == null) return null
+  if (data == null || data.tags.some((tag) => tag === ".kboard-placeholder"))
+    return null
 
   function openBlock() {
     logseq.Editor.openInRightSidebar(block.uuid)
