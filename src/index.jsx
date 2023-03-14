@@ -136,8 +136,7 @@ function provideStyles() {
 
     .kef-kb-board {
       display: flex;
-      padding: 1.5em calc(1.5em - 15px) 1.5em 1.5em;
-      background-color: var(--ls-active-primary-color);
+      padding: 1em 0;
       width: 100%;
       overflow-x: auto;
       overflow-y: visible;
