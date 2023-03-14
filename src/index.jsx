@@ -211,32 +211,36 @@ function provideStyles() {
       font-size: 0.75em;
     }
     .kef-kb-addone {
-      display: flex;
-      align-items: center;
       padding: 0.25em 8px;
     }
-    .kef-kb-addone-btn {
+    .kef-kb-addone-addbtn {
       display: flex;
       align-items: center;
       width: 100%;
     }
     .kef-kb-addone-input {
-      flex: 1 1 auto;
       line-height: 1.5;
       padding: 5px 8px;
       border-color: var(--ls-border-color);
       background-color: var(--ls-primary-background-color) !important;
       border-radius: 0.25em;
+      resize: vertical !important;
+      overflow-y: auto !important;
     }
     .kef-kb-addone-input:focus {
       box-shadow: none;
     }
-    .kef-kb-addone-input-btn {
+    .kef-kb-addone-btns {
+      display: flex;
+      align-items: center;
+    }
+    .kef-kb-addone-btn {
       flex: 0 0 auto;
       padding: 0 0.25em;
+      margin-right: 0.25em;
       cursor: pointer;
     }
-    .kef-kb-addone-input-btn:hover {
+    .kef-kb-addone-btn:hover {
       color: var(--ls-active-secondary-color);
     }
     .kef-kb-menu-overlay {
@@ -250,7 +254,7 @@ function provideStyles() {
     .kef-kb-menu {
       position: absolute;
       box-shadow: 0 2px 8px 0 var(--ls-block-bullet-color);
-      background-color: var(--ls-tertiary-background-color);
+      background-color: var(--ls-secondary-background-color);
       padding: 0.5em 0;
     }
     .kef-kb-card-menu-item {
@@ -262,7 +266,7 @@ function provideStyles() {
       font-size: 0.875em;
     }
     .kef-kb-card-menu-item:hover {
-      background-color: var(--ls-menu-hover-color);
+      background-color: var(--ls-primary-background-color);
     }
     `,
   })

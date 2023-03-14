@@ -36,15 +36,22 @@ export default function KanbanAddOne({ list }) {
   }
 
   function onInputKeyDown(e) {
+    e.stopPropagation()
     switch (e.key) {
       case "Escape":
         e.preventDefault()
         setMode(BUTTON)
         break
-      case "Enter":
+      case "Enter": {
         e.preventDefault()
-        onAdd(e)
+        if (e.shiftKey) {
+          const t = e.target
+          t.setRangeText("\n", t.selectionStart, t.selectionEnd, "end")
+        } else {
+          onAdd(e)
+        }
         break
+      }
       default:
         break
     }
@@ -53,18 +60,33 @@ export default function KanbanAddOne({ list }) {
   return (
     <form class="kef-kb-addone" onSubmit={onAdd} onMouseDown={stopPropagation}>
       {mode === BUTTON ? (
-        <button class="kef-kb-addone-btn" onClick={changeModeToInput}>
+        <button class="kef-kb-addone-addbtn" onClick={changeModeToInput}>
           <PlusIcon /> {t("Add a card")}
         </button>
       ) : (
         <>
-          <input class="kef-kb-addone-input" ref={inp} type="text" onKeyDown={onInputKeyDown} />
-          <input
-            class="kef-kb-addone-input-btn"
-            type="submit"
-            value={t("OK")}
-            disabled={duringOnAdd}
+          <textarea
+            class="kef-kb-addone-input"
+            ref={inp}
+            onKeyDown={onInputKeyDown}
           />
+          <div class="kef-kb-addone-btns">
+            <button
+              class="kef-kb-addone-btn"
+              type="submit"
+              disabled={duringOnAdd}
+            >
+              {t("OK")}
+            </button>
+            <button
+              class="kef-kb-addone-btn"
+              type="button"
+              disabled={duringOnAdd}
+              onClick={() => setMode(BUTTON)}
+            >
+              {t("Cancel")}
+            </button>
+          </div>
         </>
       )}
     </form>
