@@ -13,8 +13,9 @@ export default function KanbanCard({ block, property, index }) {
   useEffect(() => {
     if (block == null) return
     ;(async () => {
-      const [content, tags, properties] = await parseContent(block.content)
-      setData({ content, tags, properties })
+      const [content, tags, properties, scheduled, deadline] =
+        await parseContent(block.content)
+      setData({ content, tags, properties, scheduled, deadline })
     })()
   }, [block])
 
@@ -105,7 +106,7 @@ export default function KanbanCard({ block, property, index }) {
               </div>
             ))}
           </div>
-          {properties?.length > 0 && (
+          {(properties?.length > 0 || data.scheduled || data.deadline) && (
             <div class="kef-kb-card-props">
               {properties.map(([name, value]) => (
                 <>
@@ -113,6 +114,18 @@ export default function KanbanCard({ block, property, index }) {
                   <div class="kef-kb-card-props-val">{value}</div>
                 </>
               ))}
+              {data.scheduled && (
+                <>
+                  <div class="kef-kb-card-props-key">{t("scheduled")}</div>
+                  <div class="kef-kb-card-props-val">{data.scheduled}</div>
+                </>
+              )}
+              {data.deadline && (
+                <>
+                  <div class="kef-kb-card-props-key">{t("deadline")}</div>
+                  <div class="kef-kb-card-props-val">{data.deadline}</div>
+                </>
+              )}
             </div>
           )}
 

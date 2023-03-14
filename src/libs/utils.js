@@ -5,9 +5,13 @@ export async function parseContent(content) {
     m[1],
     m[2].replace(/\[\[([^\]]+)\]\]/g, "$1"),
   ])
+
   const tags = Array.from(
     content.matchAll(/(?:^|\s)#(?:(?:\[\[((?:[^\]]|\](?!\]))+)\]\])|(\S+))/g),
   ).map((m) => m[1] ?? m[2])
+
+  const scheduled = content.match(/\nSCHEDULED: <([^>]+)>/)?.[1]
+  const deadline = content.match(/\nDEADLINE: <([^>]+)>/)?.[1]
 
   // Use only the first line.
   content = content.match(/.*/)[0]
@@ -43,7 +47,7 @@ export async function parseContent(content) {
   // Remove page refs
   content = content.replace(/\[\[([^\]]+)\]\]/g, "$1")
 
-  return [content.trim(), tags, props]
+  return [content.trim(), tags, props, scheduled, deadline]
 }
 
 export async function persistBlockUUID(uuid) {

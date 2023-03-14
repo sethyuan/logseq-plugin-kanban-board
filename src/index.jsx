@@ -309,7 +309,7 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
         renderKanban(key, blockRef, property)
       }, 300),
     )
-    offHooks[rootBlock.id] = offHook
+    offHooks[key] = offHook
 
     renderKanban(key, blockRef, property)
   }, 0)
@@ -350,8 +350,8 @@ function watchBlockChildrenChange(id, elID, callback) {
   return logseq.DB.onChanged(({ blocks, txData, txMeta }) => {
     const rendererEl = parent.document.getElementById(elID)
     if (rendererEl == null || !rendererEl.isConnected) {
-      offHooks[id]?.()
-      delete offHooks[id]
+      offHooks[elID]?.()
+      delete offHooks[elID]
       return
     }
 
