@@ -32,16 +32,11 @@ async function main() {
   logseq.App.onMacroRendererSlotted(kanbanRenderer)
 
   logseq.Editor.registerSlashCommand("Kanban Board", async () => {
-    try {
-      const curr = await logseq.Editor.getCurrentBlock()
-      const { blockRef, property } = await openDialog()
-      await logseq.Editor.updateBlock(
-        curr.uuid,
+    openDialog(async (blockRef, property) => {
+      await logseq.Editor.insertAtEditingCursor(
         `{{renderer :kboard, ${blockRef}, ${property}}}`,
       )
-    } catch {
-      // dialog canceled
-    }
+    })
   })
 
   logseq.Editor.registerSlashCommand("Kanban Board (Sample)", async () => {
@@ -72,8 +67,7 @@ async function main() {
   logseq.Editor.registerBlockContextMenuItem(
     t("Kanban Board"),
     async ({ uuid }) => {
-      try {
-        const { property } = await openDialog(uuid)
+      openDialog(uuid, async (blockRef, property) => {
         await persistBlockUUID(uuid)
         await logseq.Editor.insertBlock(
           uuid,
@@ -82,9 +76,7 @@ async function main() {
         )
         await waitMs(50)
         await logseq.Editor.exitEditingMode()
-      } catch {
-        // dialog canceled
-      }
+      })
     },
   )
 
@@ -101,12 +93,10 @@ function provideStyles() {
   logseq.provideStyle({
     key: "kef-kb",
     style: `
-    .kef-kb-dialog-overlay {
-      position: fixed;
-      top: 0;
-      bottom: 0;
+    #${DIALOG_ID} {
+      position: absolute;
+      top: 32px;
       left: 0;
-      right: 0;
       z-index: var(--ls-z-index-level-2);
       display: none;
     }
@@ -116,14 +106,13 @@ function provideStyles() {
       padding: 10px;
       background: var(--ls-primary-background-color);
       box-shadow: 0 0 10px 0 lightgray;
-      position: absolute;
     }
     .kef-kb-dialog-input {
       line-height: 1.5;
       padding: 5px 8px;
       margin-bottom: 0.5em;
       border-color: var(--ls-border-color);
-      width: 360px;
+      width: 380px;
     }
     .kef-kb-dialog-input::placeholder {
       opacity: 0.5;
@@ -316,34 +305,35 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
   }, 0)
 }
 
-function openDialog(uuid) {
-  return new Promise((resolve, reject) => {
-    const editor = uuid
-      ? parent.document.getElementById(`block-content-${uuid}`)
-      : parent.document.activeElement?.closest(".block-editor")
-    if (editor == null) reject()
-    const rect = editor.getBoundingClientRect()
-    render(
-      <KanbanDialog
-        visible
-        uuid={uuid}
-        rect={rect}
-        onConfirm={(blockRef, property) => {
-          closeDialog()
-          resolve({ blockRef, property })
-        }}
-        onClose={() => {
-          closeDialog()
-          reject()
-        }}
-      />,
-      dialogContainer,
-    )
-  })
+function openDialog(...args) {
+  const [uuid, callback] =
+    typeof args[0] === "function" ? [undefined, args[0]] : [args[0], args[1]]
+
+  const editor = uuid
+    ? parent.document.getElementById(`block-content-${uuid}`)
+    : parent.document.activeElement?.closest(".block-editor")
+  if (editor == null) return
+
+  render(
+    <KanbanDialog
+      visible={{}}
+      uuid={uuid}
+      onConfirm={(blockRef, property) => {
+        closeDialog()
+        callback(blockRef, property)
+      }}
+      onClose={() => {
+        closeDialog()
+      }}
+    />,
+    dialogContainer,
+  )
+  editor.appendChild(dialogContainer)
+  dialogContainer.style.display = "block"
 }
 
 function closeDialog() {
-  render(<KanbanBoard visible={false} />, dialogContainer)
+  dialogContainer.style.display = "none"
 }
 
 function watchBlockChildrenChange(id, elID, callback) {

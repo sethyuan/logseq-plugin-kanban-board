@@ -2,13 +2,7 @@ import { t } from "logseq-l10n"
 import { useEffect } from "preact/hooks"
 import { useForm } from "react-hook-form"
 
-export default function KanbanDialog({
-  visible,
-  uuid,
-  rect,
-  onConfirm,
-  onClose,
-}) {
+export default function KanbanDialog({ visible, uuid, onConfirm, onClose }) {
   const {
     register,
     handleSubmit,
@@ -29,7 +23,7 @@ export default function KanbanDialog({
         parent.document.getElementById("kef-kb-dialog-refinput").focus()
       }
     }
-  }, [visible, uuid, rect])
+  }, [visible, uuid])
 
   function confirm(data) {
     onConfirm(data.blockRef, data.property)
@@ -48,45 +42,35 @@ export default function KanbanDialog({
   }
 
   return (
-    <div
-      class="kef-kb-dialog-overlay"
-      onClick={onClose}
-      style={{ display: visible ? "block" : "none" }}
+    <form
+      class="kef-kb-dialog"
+      tabIndex={-1}
+      onKeyDown={onKeyDown}
+      onMouseDown={stopPropagation}
+      onSubmit={handleSubmit(confirm)}
     >
-      <form
-        class="kef-kb-dialog"
-        style={{
-          top: `${rect.top + 32}px`,
-          left: `${rect.left}px`,
-        }}
-        tabIndex={-1}
-        onKeyDown={onKeyDown}
-        onClick={stopPropagation}
-        onSubmit={handleSubmit(confirm)}
-      >
-        <input
-          id="kef-kb-dialog-refinput"
-          class="kef-kb-dialog-input"
-          type="text"
-          placeholder={t("Block reference")}
-          readOnly={!!uuid}
-          {...register("blockRef", { required: true })}
-        />
-        {errors.blockRef && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
-        <input
-          id="kef-kb-dialog-propinput"
-          class="kef-kb-dialog-input"
-          type="text"
-          placeholder={t("Property used to create lists")}
-          {...register("property", { required: true })}
-        />
-        {errors.property && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
-        <div>
-          <button class="kef-kb-dialog-btn" type="submit">
-            {t("OK")}
-          </button>
-        </div>
-      </form>
-    </div>
+      <input
+        id="kef-kb-dialog-refinput"
+        class="kef-kb-dialog-input"
+        type="text"
+        placeholder={t("Block reference")}
+        readOnly={!!uuid}
+        {...register("blockRef", { required: true })}
+      />
+      {errors.blockRef && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
+      <input
+        id="kef-kb-dialog-propinput"
+        class="kef-kb-dialog-input"
+        type="text"
+        placeholder={t("Property used to create lists")}
+        {...register("property", { required: true })}
+      />
+      {errors.property && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
+      <div>
+        <button class="kef-kb-dialog-btn" type="submit">
+          {t("OK")}
+        </button>
+      </div>
+    </form>
   )
 }
