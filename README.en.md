@@ -15,6 +15,7 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
 - Click on a card to open the block corresponding to the card in the right sidebar.
 - Drag a card to sort between the different lists.
 - Drag a list to sort the lists.
+- Cards have a context menu with frequently used operations.
 
 ## List data structure
 
