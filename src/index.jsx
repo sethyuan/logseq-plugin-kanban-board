@@ -249,10 +249,20 @@ function provideStyles() {
     }
     .kef-kb-menu {
       position: absolute;
-      width: 300px;
-      height: 200px;
-      box-shadow: 2px 3px 6px 0 #88888894;
-      background: var(--ls-primary-background-color);
+      box-shadow: 0 2px 8px 0 var(--ls-block-bullet-color);
+      background-color: var(--ls-tertiary-background-color);
+      padding: 0.5em 0;
+    }
+    .kef-kb-card-menu-item {
+      display: block;
+      padding: 0.5em 0.75em;
+      width: 100%;
+      text-align: left;
+      user-select: none;
+      font-size: 0.875em;
+    }
+    .kef-kb-card-menu-item:hover {
+      background-color: var(--ls-menu-hover-color);
     }
     `,
   })

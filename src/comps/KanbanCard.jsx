@@ -1,6 +1,7 @@
+import { t } from "logseq-l10n"
 import { useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
-import { parseContent } from "../libs/utils"
+import { parseContent, persistBlockUUID } from "../libs/utils"
 import Menu from "./Menu"
 
 const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed"])
@@ -48,6 +49,35 @@ export default function KanbanCard({ block, property, index }) {
     setMenuData((old) => ({ ...old, visible: false }))
   }
 
+  async function copyRef() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await persistBlockUUID(block.uuid)
+    await parent.navigator.clipboard.writeText(`((${block.uuid}))`)
+    await logseq.UI.showMsg(t("Copied."))
+  }
+
+  async function copyEmbed() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await persistBlockUUID(block.uuid)
+    await parent.navigator.clipboard.writeText(`{{embed ((${block.uuid}))}}`)
+    await logseq.UI.showMsg(t("Copied."))
+  }
+
+  async function deleteCard() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await logseq.Editor.removeBlock(block.uuid)
+    await logseq.UI.showMsg(t("Deleted."))
+  }
+
   const properties = data.properties?.filter(
     ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
   )
@@ -88,7 +118,15 @@ export default function KanbanCard({ block, property, index }) {
 
           {menuData.visible && (
             <Menu x={menuData.x} y={menuData.y} onClose={closeMenu}>
-              <p>Hello</p>
+              <button class="kef-kb-card-menu-item" onClick={copyRef}>
+                {t("Copy reference")}
+              </button>
+              <button class="kef-kb-card-menu-item" onClick={copyEmbed}>
+                {t("Copy as embed")}
+              </button>
+              <button class="kef-kb-card-menu-item" onClick={deleteCard}>
+                {t("Delete")}
+              </button>
             </Menu>
           )}
         </div>

@@ -4,5 +4,10 @@
   "Property used to create lists": "用来创建列表的属性",
   "OK": "确定",
   "Required.": "必填。",
-  "Add a card": "添加一张卡片"
+  "Add a card": "添加一张卡片",
+  "Copy reference": "复制块引用",
+  "Copy as embed": "复制为内嵌块",
+  "Delete": "删除",
+  "Copied.": "已复制。",
+  "Deleted.": "已删除"
 }
