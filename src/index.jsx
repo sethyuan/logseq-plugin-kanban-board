@@ -167,18 +167,29 @@ function provideStyles() {
     .kef-kb-card {
       background-color: var(--ls-primary-background-color);
       margin-bottom: 8px;
-      padding: 8px;
+      padding-bottom: 8px;
       box-shadow: 0px 0px 2px 0 var(--ls-block-bullet-border-color);
       border-radius: 2px;
       cursor: pointer;
+      overflow: hidden;
     }
     .kef-kb-card:hover {
       box-shadow: 0px 0px 2px 2px var(--ls-block-bullet-border-color);
+    }
+    .kef-kb-card-cover {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+    .kef-kb-card-content {
+      padding: 8px 8px 0;
     }
     .kef-kb-card-tags {
       display: flex;
       flex-flow: row wrap;
       margin-top: 0.25em;
+      padding: 0 8px;
     }
     .kef-kb-card-tag {
       flex: 0 0 auto;
@@ -199,7 +210,7 @@ function provideStyles() {
       grid-template-columns: auto 1fr;
       margin-top: 0.3em;
       background-color: var(--ls-secondary-background-color);
-      padding: 5px 6px;
+      padding: 5px 14px;
     }
     .kef-kb-card-props-key {
       font-size: 0.75em;
@@ -285,6 +296,8 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
   const property = args[2].trim()
   if (!property) return
 
+  const coverProp = args[3]?.trim()
+
   const slotEl = parent.document.getElementById(slot)
   if (!slotEl) return
   const renderered = slotEl?.childElementCount > 0
@@ -309,12 +322,12 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
       rootBlock.id,
       key,
       debounce((blocks, txData, txMeta) => {
-        renderKanban(key, blockRef, property)
+        renderKanban(key, blockRef, property, coverProp)
       }, 300),
     )
     offHooks[key] = offHook
 
-    renderKanban(key, blockRef, property)
+    renderKanban(key, blockRef, property, coverProp)
   }, 0)
 }
 
@@ -372,13 +385,16 @@ function watchBlockChildrenChange(id, elID, callback) {
   })
 }
 
-async function renderKanban(id, boardUUID, property) {
+async function renderKanban(id, boardUUID, property, coverProp) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
   const data = await getBoardData(boardUUID, property)
   await maintainPlaceholders(data.lists, property)
-  render(<KanbanBoard board={data} property={property} />, el)
+  render(
+    <KanbanBoard board={data} property={property} coverProp={coverProp} />,
+    el,
+  )
 }
 
 async function getBoardData(boardUUID, property) {

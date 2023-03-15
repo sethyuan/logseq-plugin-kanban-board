@@ -1,6 +1,6 @@
 import { parse } from "./marked-renderer.js"
 
-export async function parseContent(content) {
+export async function parseContent(content, coverProp) {
   const props = Array.from(content.matchAll(/^(.+):: (.+)$/gm)).map((m) => [
     m[1],
     m[2].replace(/\[\[([^\]]+)\]\]/g, "$1"),
@@ -9,6 +9,12 @@ export async function parseContent(content) {
   const tags = Array.from(
     content.matchAll(/(?:^|\s)#(?:(?:\[\[((?:[^\]]|\](?!\]))+)\]\])|(\S+))/g),
   ).map((m) => m[1] ?? m[2])
+
+  const coverIndex = props.findIndex(([k]) => k === coverProp)
+  const cover = coverIndex > -1 ? await getImgSrc(props[coverIndex][1]) : null
+  if (coverIndex > -1) {
+    props.splice(coverIndex, 1)
+  }
 
   const scheduled = content.match(/\nSCHEDULED: <([^>]+)>/)?.[1]
   const deadline = content.match(/\nDEADLINE: <([^>]+)>/)?.[1]
@@ -47,7 +53,7 @@ export async function parseContent(content) {
   // Remove page refs
   content = content.replace(/\[\[([^\]]+)\]\]/g, "$1")
 
-  return [content.trim(), tags, props, scheduled, deadline]
+  return [content.trim(), tags, props, cover, scheduled, deadline]
 }
 
 export async function persistBlockUUID(uuid) {
@@ -58,4 +64,13 @@ export async function persistBlockUUID(uuid) {
       `${block.content}\nid:: ${block.uuid}`,
     )
   }
+}
+
+export async function getImgSrc(src) {
+  src = src.replace(
+    /^!?(?:\[[^\]]+\])?(?:\((?:\.\.\/)?(.+)\)|(?:(?:\.\.\/)?(.+)))/g,
+    "$1$2",
+  )
+  const graph = await logseq.App.getCurrentGraph()
+  return `file://${graph.path}/${src}`
 }

@@ -6,16 +6,21 @@ import Menu from "./Menu"
 
 const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed"])
 
-export default function KanbanCard({ block, property, index }) {
+export default function KanbanCard({
+  block,
+  property,
+  coverProp = "cover",
+  index,
+}) {
   const [data, setData] = useState()
   const [menuData, setMenuData] = useState({ visible: false })
 
   useEffect(() => {
     if (block == null) return
     ;(async () => {
-      const [content, tags, properties, scheduled, deadline] =
-        await parseContent(block.content)
-      setData({ content, tags, properties, scheduled, deadline })
+      const [content, tags, properties, cover, scheduled, deadline] =
+        await parseContent(block.content, coverProp)
+      setData({ content, tags, properties, cover, scheduled, deadline })
     })()
   }, [block])
 
@@ -94,6 +99,7 @@ export default function KanbanCard({ block, property, index }) {
           onClick={openBlock}
           onMouseDown={onMouseDown}
         >
+          {data.cover && <img class="kef-kb-card-cover" src={data.cover} />}
           <div class="kef-kb-card-content">{data.content}</div>
           <div class="kef-kb-card-tags">
             {data.tags.map((tag) => (

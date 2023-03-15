@@ -2,7 +2,13 @@ import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
 import KanbanAddOne from "./KanbanAddOne"
 import KanbanCard from "./KanbanCard"
 
-export default function KanbanList({ name, blocks, property, index }) {
+export default function KanbanList({
+  name,
+  blocks,
+  property,
+  coverProp,
+  index,
+}) {
   return (
     <Draggable draggableId={name} index={index}>
       {(provided, snapshot) => (
@@ -27,6 +33,7 @@ export default function KanbanList({ name, blocks, property, index }) {
                     key={block.id}
                     block={block}
                     property={property}
+                    coverProp={coverProp}
                     index={i}
                   />
                 ))}

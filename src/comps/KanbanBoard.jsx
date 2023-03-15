@@ -8,7 +8,7 @@ import {
 import { BoardContext } from "../libs/contexts"
 import KanbanList from "./KanbanList"
 
-export default function KanbanBoard({ board, property }) {
+export default function KanbanBoard({ board, property, coverProp }) {
   const [data, setData] = useState(board)
 
   useEffect(() => {
@@ -152,6 +152,7 @@ export default function KanbanBoard({ board, property }) {
                   name={name}
                   blocks={blocks}
                   property={property}
+                  coverProp={coverProp}
                   index={i}
                 />
               ))}
