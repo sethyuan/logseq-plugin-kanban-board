@@ -136,7 +136,7 @@ function provideStyles() {
 
     .kef-kb-board {
       display: flex;
-      padding: 1em 0;
+      padding: 1em 4px;
       width: 100%;
       overflow-x: auto;
       overflow-y: visible;
@@ -147,7 +147,7 @@ function provideStyles() {
       margin-right: 15px;
       padding-bottom: 10px;
       background-color: var(--ls-secondary-background-color);
-      box-shadow: 2px 3px 6px 0 #88888894;
+      box-shadow: 1px 1px 6px 0 #88888894;
     }
     .kef-kb-list-name {
       margin: 0;

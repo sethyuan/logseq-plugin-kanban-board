@@ -16,6 +16,11 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
 - Drag a card to sort between the different lists.
 - Drag a list to sort the lists.
 - Cards have a context menu with frequently used operations.
+- Cards support setting the cover image, by default the `cover` property of the card will be used. It is also possible to provide a 3rd parameter to the renderer to customize the property.
+  ```
+  {{renderer :kboard, ((board block ref)), list, bg}}
+  ```
+  Here `bg` is the property with the image path. The image path can be a relative path in Logseq or a local absolute path or an URL.
 
 ## List data structure
 

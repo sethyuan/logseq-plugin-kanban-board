@@ -67,10 +67,18 @@ export async function persistBlockUUID(uuid) {
 }
 
 export async function getImgSrc(src) {
-  src = src.replace(
-    /^!?(?:\[[^\]]+\])?(?:\((?:\.\.\/)?(.+)\)|(?:(?:\.\.\/)?(.+)))/g,
-    "$1$2",
+  const m = src.match(
+    /^!?(?:\[[^\]]+\])?(?:\((?:\.\.\/)?(.+)\)|(?:(?:\.\.\/)?(.+)))/,
   )
+  if (m) {
+    src = m[1] ?? m[2]
+  }
   const graph = await logseq.App.getCurrentGraph()
-  return `file://${graph.path}/${src}`
+  if (src.startsWith("http")) {
+    return src
+  } else if (src.startsWith("/") || src.match(/^[a-z]:\\/i)) {
+    return `file://${src}`
+  } else {
+    return `file://${graph.path}/${src}`
+  }
 }
