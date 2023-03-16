@@ -5,7 +5,7 @@ import { render } from "preact"
 import { debounce } from "rambdax"
 import KanbanBoard from "./comps/KanbanBoard"
 import KanbanDialog from "./comps/KanbanDialog"
-import { persistBlockUUID } from "./libs/utils"
+import { parseContent, persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
@@ -135,11 +135,19 @@ function provideStyles() {
     }
 
     .kef-kb-board {
+      width: 100%;
+    }
+    .kef-kb-board-lists {
       display: flex;
-      padding: 1em 4px;
       width: 100%;
       overflow-x: auto;
       overflow-y: visible;
+      padding: 1em 4px;
+    }
+    .kef-kb-board-name {
+      font-size: 1.25em;
+      font-weight: 600;
+      padding: 0 4px;
     }
     .kef-kb-list {
       flex: 0 0 auto;
@@ -398,13 +406,15 @@ async function renderKanban(id, boardUUID, property, coverProp) {
 }
 
 async function getBoardData(boardUUID, property) {
+  const boardContent = (await logseq.Editor.getBlock(boardUUID)).content
+  const [name] = await parseContent(boardContent)
   const blocks = await getChildren(boardUUID, property)
   const lists = groupBy(blocks, (block) =>
     Array.isArray(block.properties[property])
       ? `[[${block.properties[property][0]}]]`
       : block.properties[property],
   )
-  return { lists }
+  return { name, lists }
 }
 
 async function getChildren(uuid, property) {

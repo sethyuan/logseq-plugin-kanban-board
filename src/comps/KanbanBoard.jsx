@@ -146,17 +146,20 @@ export default function KanbanBoard({ board, property, coverProp }) {
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
-              {Object.entries(data.lists).map(([name, blocks], i) => (
-                <KanbanList
-                  key={name}
-                  name={name}
-                  blocks={blocks}
-                  property={property}
-                  coverProp={coverProp}
-                  index={i}
-                />
-              ))}
-              {provided.placeholder}
+              <div class="kef-kb-board-name">{data.name}</div>
+              <div class="kef-kb-board-lists">
+                {Object.entries(data.lists).map(([name, blocks], i) => (
+                  <KanbanList
+                    key={name}
+                    name={name}
+                    blocks={blocks}
+                    property={property}
+                    coverProp={coverProp}
+                    index={i}
+                  />
+                ))}
+                {provided.placeholder}
+              </div>
             </div>
           )}
         </Droppable>
