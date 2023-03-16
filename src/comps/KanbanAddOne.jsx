@@ -43,6 +43,7 @@ export default function KanbanAddOne({ list }) {
         setMode(BUTTON)
         break
       case "Enter": {
+        if (e.isComposing) return
         e.preventDefault()
         if (e.shiftKey) {
           const t = e.target
