@@ -18,7 +18,8 @@ export default function KanbanList({
           {...provided.draggableProps}
         >
           <div class="kef-kb-list-name" {...provided.dragHandleProps}>
-            {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
+            <span>{name.replace(/\[\[([^\]]+)\]\]/g, "$1")}</span>
+            <span class="kef-kb-list-size">({blocks.length - 1})</span>
           </div>
 
           <Droppable droppableId={name} type="CARD">

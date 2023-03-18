@@ -167,6 +167,11 @@ function provideStyles() {
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    .kef-kb-list-size {
+      font-size: 0.75em;
+      margin-left: 0.3em;
+      font-weight: 400;
+    }
     .kef-kb-list-cards {
       overflow-y: auto;
       max-height: calc(100vh - 300px);
@@ -218,7 +223,8 @@ function provideStyles() {
       grid-template-columns: auto 1fr;
       margin-top: 0.3em;
       background-color: var(--ls-secondary-background-color);
-      padding: 5px 14px;
+      padding: 5px 7px;
+      margin: 0.3em 7px 0;
     }
     .kef-kb-card-props-key {
       font-size: 0.75em;
