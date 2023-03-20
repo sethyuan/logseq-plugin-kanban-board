@@ -1,10 +1,13 @@
+import { formatDistance } from "date-fns"
 import { t } from "logseq-l10n"
-import { useEffect, useState } from "preact/hooks"
+import { useContext, useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
+import { BoardContext } from "../libs/contexts"
 import { parseContent, persistBlockUUID } from "../libs/utils"
 import Menu from "./Menu"
+import Popup from "./Popup"
 
-const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed"])
+const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed", "duration"])
 
 export default function KanbanCard({
   block,
@@ -14,6 +17,7 @@ export default function KanbanCard({
 }) {
   const [data, setData] = useState()
   const [menuData, setMenuData] = useState({ visible: false })
+  const { listNames, writeDuration } = useContext(BoardContext)
 
   useEffect(() => {
     if (block == null) return
@@ -21,6 +25,10 @@ export default function KanbanCard({
       const [content, tags, properties, cover, scheduled, deadline] =
         await parseContent(block.content, coverProp)
       setData({ content, tags, properties, cover, scheduled, deadline })
+
+      if (noDuration(block, block.properties[property])) {
+        await writeDuration(block, block.properties[property])
+      }
     })()
   }, [block])
 
@@ -84,6 +92,36 @@ export default function KanbanCard({
     await logseq.UI.showMsg(t("Deleted."))
   }
 
+  function renderDuration() {
+    const durationData = JSON.parse(block.properties.duration)
+    return (
+      <div class="kef-kb-card-duration-popup">
+        {listNames
+          .map((list) => {
+            const isPage = list.startsWith("[[")
+            const durationListData =
+              durationData[isPage ? `{${list.substring(1)}` : list]
+            if (durationListData == null) return null
+            const [acc, last] = durationListData
+            const nowTs = Date.now()
+            const now = new Date(nowTs + acc)
+            const backThen = last === 0 ? new Date(nowTs) : new Date(last)
+            return (
+              <>
+                <span class="kef-kb-card-duration-popup-l">
+                  {isPage ? list.substring(2, list.length - 2) : list}
+                </span>
+                <span class="kef-kb-card-duration-popup-v">
+                  {formatDistance(now, backThen)}
+                </span>
+              </>
+            )
+          })
+          .filter((x) => x != null)}
+      </div>
+    )
+  }
+
   const properties = data.properties?.filter(
     ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
   )
@@ -100,7 +138,12 @@ export default function KanbanCard({
           onMouseDown={onMouseDown}
         >
           {data.cover && <img class="kef-kb-card-cover" src={data.cover} />}
-          <div class="kef-kb-card-content">{data.content}</div>
+          <div class="kef-kb-card-content">
+            <span>{data.content}</span>
+            <Popup popup={renderDuration}>
+              <span class="kef-kb-card-duration">&#xf319;</span>
+            </Popup>
+          </div>
           <div class="kef-kb-card-tags">
             {data.tags.map((tag) => (
               <div
@@ -152,4 +195,13 @@ export default function KanbanCard({
       )}
     </Draggable>
   )
+}
+
+function noDuration(block, listName) {
+  if (!block.properties.duration) return true
+  const duration = JSON.parse(block.properties.duration)
+  if (listName.startsWith("[[")) {
+    listName = `{${listName.substring(1)}`
+  }
+  return !duration[listName]
 }

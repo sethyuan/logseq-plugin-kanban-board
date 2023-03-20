@@ -1,4 +1,4 @@
-import { createPortal } from "react-dom"
+import { createPortal } from "preact/compat"
 
 export default function Menu({ x, y, children, onClose }) {
   function overlayOnClick(e) {

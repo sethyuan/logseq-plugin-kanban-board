@@ -1,6 +1,6 @@
 {
   "name": "logseq-plugin-kanban-board",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "main": "dist/index.html",
   "logseq": {
     "id": "_sethyuan-logseq-kanban-board",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@logseq/libs": "^0.0.14",
+    "date-fns": "^2.29.3",
     "immer": "^9.0.19",
     "jsutils": "^1.12.0",
     "logseq-l10n": "^0.2.0",

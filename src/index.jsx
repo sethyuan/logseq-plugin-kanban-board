@@ -1,4 +1,6 @@
 import "@logseq/libs"
+import { setDefaultOptions } from "date-fns"
+import { zhCN as dateZhCN } from "date-fns/locale"
 import { waitMs } from "jsutils"
 import { setup, t } from "logseq-l10n"
 import { render } from "preact"
@@ -17,6 +19,14 @@ async function main() {
   await setup({ builtinTranslations: { "zh-CN": zhCN } })
 
   provideStyles()
+
+  const { preferredLanguage, preferredStartOfWeek, preferredDateFormat } =
+    await logseq.App.getUserConfigs()
+  const weekStart = (+(preferredStartOfWeek ?? 6) + 1) % 7
+  setDefaultOptions({
+    locale: preferredLanguage === "zh-CN" ? dateZhCN : undefined,
+    weekStartsOn: weekStart,
+  })
 
   logseq.provideUI({
     key: DIALOG_ID,
@@ -198,6 +208,29 @@ function provideStyles() {
     .kef-kb-card-content {
       padding: 8px 8px 0;
     }
+    .kef-kb-card-duration {
+      font-family: 'tabler-icons';
+      margin-left: 0.75em;
+      color: var(--ls-active-primary-color);
+      vertical-align: top;
+    }
+    .kef-kb-card-duration-popup {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      background-color: var(--ls-secondary-background-color);
+      padding: 0.75em;
+      min-width: 200px;
+      min-height: 100px;
+      box-shadow: 0 2px 8px 0 #88888894;
+    }
+    .kef-kb-card-duration-popup-l {
+      font-size: 0.875em;
+      font-weight: 600;
+      margin-right: 1em;
+    }
+    .kef-kb-card-duration-popup-v {
+      font-size: 0.875em;
+    }
     .kef-kb-card-tags {
       display: flex;
       flex-flow: row wrap;
@@ -221,7 +254,6 @@ function provideStyles() {
     .kef-kb-card-props {
       display: grid;
       grid-template-columns: auto 1fr;
-      margin-top: 0.3em;
       background-color: var(--ls-secondary-background-color);
       padding: 5px 7px;
       margin: 0.3em 7px 0;
@@ -292,6 +324,11 @@ function provideStyles() {
     }
     .kef-kb-card-menu-item:hover {
       background-color: var(--ls-primary-background-color);
+    }
+    .kef-kb-popup {
+      position: fixed;
+      z-index: var(--ls-z-index-level-2);
+      transform: translateY(-50%);
     }
     `,
   })
@@ -440,6 +477,9 @@ async function getChildren(uuid, property) {
   ).flat()
   const map = new Map()
   for (const block of dbResult) {
+    if (Array.isArray(block.properties[property])) {
+      block.properties[property] = `[[${block.properties[property][0]}]]`
+    }
     map.set(block.left.id, block)
   }
   for (let i = 0, id = dbResult[0].parent.id; i < dbResult.length; i++) {

@@ -35,15 +35,25 @@ export default function KanbanBoard({ board, property, coverProp }) {
 
   async function moveCard(e) {
     const { source: src, destination: dest } = e
+    const card = data.lists[src.droppableId][src.index]
+    const durationValue = updatedDurationValue(
+      card,
+      src.droppableId,
+      dest.droppableId,
+    )
 
     setData(
       produce(data, (draft) => {
         if (src.droppableId === dest.droppableId && src.index < dest.index) {
           const card = draft.lists[src.droppableId][src.index]
+          card.properties[property] = dest.droppableId
+          card.properties.duration = durationValue
           draft.lists[dest.droppableId].splice(dest.index + 1, 0, card)
           draft.lists[src.droppableId].splice(src.index, 1)
         } else {
           const srcCard = draft.lists[src.droppableId].splice(src.index, 1)
+          srcCard[0].properties[property] = dest.droppableId
+          srcCard[0].properties.duration = durationValue
           draft.lists[dest.droppableId].splice(dest.index, 0, ...srcCard)
         }
       }),
@@ -55,6 +65,11 @@ export default function KanbanBoard({ board, property, coverProp }) {
       block.uuid,
       property,
       dest.droppableId,
+    )
+    await logseq.Editor.upsertBlockProperty(
+      block.uuid,
+      "duration",
+      durationValue,
     )
 
     if (src.droppableId === dest.droppableId) {
@@ -115,8 +130,30 @@ export default function KanbanBoard({ board, property, coverProp }) {
     }
   }
 
+  function updatedDurationValue(block, from, to) {
+    if (from.startsWith("[[")) {
+      from = `{${from.substring(1)}`
+    }
+    if (to?.startsWith("[[")) {
+      to = `{${to.substring(1)}`
+    }
+    const current = block.properties.duration
+      ? JSON.parse(block.properties.duration)
+      : {}
+    const now = Date.now()
+    const [srcAcc, last] = current[from] ?? [0, now]
+    const [destAcc] = current[to] ?? [0]
+    return JSON.stringify({
+      ...current,
+      [from]: [now - last + srcAcc, to ? 0 : now],
+      ...(to ? { [to]: [destAcc, now] } : {}),
+    })
+  }
+
   const contextValue = useMemo(
     () => ({
+      listNames: Object.keys(data.lists),
+
       async addCard(listName, text) {
         const list = data.lists[listName]
         const refBlock = list[list.length - 1]
@@ -125,6 +162,12 @@ export default function KanbanBoard({ board, property, coverProp }) {
           sibling: true,
           before: refBlock.content.includes(".kboard-placeholder"),
         })
+      },
+
+      async writeDuration(block, listName) {
+        const value = updatedDurationValue(block, listName)
+        block.properties.duration = value
+        await logseq.Editor.upsertBlockProperty(block.uuid, "duration", value)
       },
     }),
     [data],
