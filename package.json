@@ -1,6 +1,6 @@
 {
   "name": "logseq-plugin-kanban-board",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "main": "dist/index.html",
   "logseq": {
     "id": "_sethyuan-logseq-kanban-board",

@@ -274,6 +274,7 @@ function provideStyles() {
       left: 0;
       right: 0;
       background-color: rgba(0 0 0 / 0);
+      z-index: var(--ls-z-index-level-2);
     }
     .kef-kb-menu {
       position: absolute;

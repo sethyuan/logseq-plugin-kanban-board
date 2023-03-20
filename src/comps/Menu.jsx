@@ -26,6 +26,6 @@ export default function Menu({ x, y, children, onClose }) {
         {children}
       </div>
     </div>,
-    parent.document.getElementById("main-content-container"),
+    parent.document.getElementById("app-container"),
   )
 }
