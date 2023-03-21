@@ -21,6 +21,7 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
   {{renderer :kboard, ((board block ref)), list, bg}}
   ```
   这里 `bg` 就是有封面图片地址的属性。封面图可以给 Logseq 中的相对地址也可以给本机的绝对地址或者一个 URL。
+- 卡片在每个列表的时长追踪。
 
 ## 对列表数据格式的要求
 
