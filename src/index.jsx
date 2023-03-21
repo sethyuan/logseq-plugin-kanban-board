@@ -220,13 +220,13 @@ function provideStyles() {
       background-color: var(--ls-secondary-background-color);
       padding: 0.75em;
       min-width: 200px;
-      min-height: 100px;
       box-shadow: 0 2px 8px 0 #88888894;
     }
     .kef-kb-card-duration-popup-l {
       font-size: 0.875em;
       font-weight: 600;
       margin-right: 1em;
+      margin-bottom: 0.5em;
     }
     .kef-kb-card-duration-popup-v {
       font-size: 0.875em;
