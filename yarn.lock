@@ -593,10 +593,10 @@ react-redux@^7.2.0:
     prop-types "^15.7.2"
     react-is "^17.0.2"
 
-reactutils@^5.12.0:
-  version "5.12.0"
-  resolved "https://registry.npmmirror.com/reactutils/-/reactutils-5.12.0.tgz#a21076df60e4e46ff69b44d2ea2ceaa2cab428e2"
-  integrity sha512-B4YWL7051GTibMjZ6QDKxT5L1yvxnxLK4P+PaoKwWNMUk0pcmCAs5BVK6z9ywmGumQ10Q0wCypmKdfwguEK25g==
+reactutils@^5.13.0:
+  version "5.13.0"
+  resolved "https://registry.npmmirror.com/reactutils/-/reactutils-5.13.0.tgz#919701256a22e55ce1c0c3a365ba3e7c8768ecdd"
+  integrity sha512-vuu2Q1uf9IDxWKa1g4nqLYEWVcL4tFP3DspigEZQtrAdHMWqjgZo1rKQ24Nr+Wn7KaxkdAY6Nu9HiWfkZSCeEg==
 
 redux@^4.0.0, redux@^4.0.4:
   version "4.2.1"

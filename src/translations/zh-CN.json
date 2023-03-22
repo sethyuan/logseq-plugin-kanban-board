@@ -10,5 +10,13 @@
   "Copy as embed": "复制为内嵌块",
   "Delete": "删除",
   "Copied.": "已复制。",
-  "Deleted.": "已删除"
+  "Deleted.": "已删除",
+  "Keyword": "关键词",
+  "Tags": "标签",
+  "Exact match": "精准匹配",
+  "Any match": "任一匹配",
+  "Properties": "属性",
+  "name": "名称",
+  "keyword": "关键词",
+  "Reset": "重置"
 }

@@ -159,6 +159,130 @@ function provideStyles() {
       font-weight: 600;
       padding: 0 4px;
     }
+    .kef-kb-filter-icon {
+      font-family: 'tabler-icons';
+      font-weight: 400;
+      margin-left: 0.5em;
+      cursor: pointer;
+    }
+    .kef-kb-filter-on {
+      color: var(--ls-active-primary-color);
+    }
+    .kef-kb-filter-menu {
+      opacity: 0.95;
+    }
+    .kef-kb-filter-popup {
+      width: 320px;
+      max-height: 600px;
+      font-size: 0.875em;
+      overflow-y: auto;
+    }
+    .kef-kb-filter-label:first-child {
+      margin-top: 0.5em;
+    }
+    .kef-kb-filter-label {
+      margin: 1em 0.75em 0.5em;
+      font-weight: 600;
+    }
+    .kef-kb-filter-input {
+      margin: 0 0.75em;
+      border-radius: 2px;
+      padding: 0.3em;
+      width: calc(100% - 2 * 0.75em);
+      background-color: var(--ls-primary-background-color) !important;
+      line-height: 1.4;
+    }
+    .kef-kb-filter-input:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-filter-select {
+      margin: 0 0.75em 0.5em;
+      width: calc(100% - 2 * 0.75em);
+      padding: 0.3em;
+      border-radius: 2px;
+      font-size: 1em;
+      line-height: 1.4;
+    }
+    .kef-kb-filter-select:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-filter-checkbox {
+      display: block;
+      margin: 0 0.75em 0.3em;
+    }
+    .kef-kb-filter-checkbox input:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-filter-checkbox span {
+      margin-left: 0.8em;
+      background: var(--ls-active-secondary-color);
+      border-radius: 2px;
+      padding: 1px 7px;
+      color: #fff;
+      font-size: 0.85714em;
+      vertical-align: middle;
+    }
+    .kef-kb-filter-prop-row {
+      display: flex;
+      margin: 0 0.75em 0.5em;
+      align-items: center;
+    }
+    .kef-kb-filter-prop-remove {
+      flex: 0 0 auto;
+      margin-right: 0.3em;
+      font-family: 'tabler-icons';
+      font-weight: 400;
+    }
+    .kef-kb-filter-prop-remove:hover {
+      color: var(--ls-active-secondary-color);
+    }
+    .kef-kb-filter-prop-key {
+      flex: 0 0 auto;
+      width: 100px;
+      border-radius: 2px;
+      padding: 0.3em;
+      background-color: var(--ls-primary-background-color) !important;
+      margin-right: 0.25em;
+      line-height: 1.4;
+    }
+    .kef-kb-filter-prop-key:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-filter-prop-value {
+      flex: 1 1 auto;
+      border-radius: 2px;
+      padding: 0.3em;
+      background-color: var(--ls-primary-background-color) !important;
+      margin-left: 0.75em;
+      line-height: 1.4;
+    }
+    .kef-kb-filter-prop-value:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-filter-prop-add {
+      display: block;
+      font-family: 'tabler-icons';
+      font-weight: 400;
+      font-size: 1.142857em;
+      margin: 0 0.75em;
+      transform: translateX(-3px);
+    }
+    .kef-kb-filter-prop-add:hover {
+      color: var(--ls-active-secondary-color);
+    }
+    .kef-kb-filter-reset {
+      margin: 1em 0.75em 0.5em;
+      padding: 0 0.25em;
+      cursor: pointer;
+    }
+    .kef-kb-filter-reset:hover {
+      color: var(--ls-active-secondary-color);
+    }
     .kef-kb-list {
       flex: 0 0 auto;
       width: 260px;
@@ -285,6 +409,7 @@ function provideStyles() {
     }
     .kef-kb-addone-input:focus {
       box-shadow: none;
+      border-color: inherit;
     }
     .kef-kb-addone-btns {
       display: flex;
@@ -292,8 +417,8 @@ function provideStyles() {
     }
     .kef-kb-addone-btn {
       flex: 0 0 auto;
-      padding: 0 0.25em;
       margin-right: 0.25em;
+      padding: 0 0.25em;
       cursor: pointer;
     }
     .kef-kb-addone-btn:hover {
@@ -452,13 +577,13 @@ async function renderKanban(id, boardUUID, property, coverProp) {
 async function getBoardData(boardUUID, property) {
   const boardContent = (await logseq.Editor.getBlock(boardUUID)).content
   const [name] = await parseContent(boardContent)
-  const blocks = await getChildren(boardUUID, property)
+  const [blocks, tags] = await getChildren(boardUUID, property)
   const lists = groupBy(blocks, (block) =>
     Array.isArray(block.properties[property])
       ? `[[${block.properties[property][0]}]]`
       : block.properties[property],
   )
-  return { name, lists }
+  return { name, lists, tags }
 }
 
 async function getChildren(uuid, property) {
@@ -475,19 +600,37 @@ async function getChildren(uuid, property) {
       `:${property}`,
     )
   ).flat()
+  const allTags = new Set()
   const map = new Map()
   for (const block of dbResult) {
     if (Array.isArray(block.properties[property])) {
       block.properties[property] = `[[${block.properties[property][0]}]]`
+    } else {
+      block.properties[property] = `${block.properties[property]}`
     }
     map.set(block.left.id, block)
+
+    const [content, tags, props, cover, scheduled, deadline] =
+      await parseContent(block.content)
+    block.data = {
+      content,
+      tags,
+      props,
+      cover,
+      scheduled,
+      deadline,
+    }
+    for (const tag of tags) {
+      allTags.add(tag)
+    }
   }
   for (let i = 0, id = dbResult[0].parent.id; i < dbResult.length; i++) {
     const b = map.get(id) ?? dbResult[i]
     dbResult[i] = b
     id = b.id
   }
-  return dbResult
+  allTags.delete(".kboard-placeholder")
+  return [dbResult, allTags]
 }
 
 function groupBy(arr, selector) {

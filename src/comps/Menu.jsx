@@ -1,27 +1,36 @@
 import { createPortal } from "preact/compat"
+import { cls } from "reactutils"
 
-export default function Menu({ x, y, children, onClose }) {
+export default function Menu({ x, y, children, onClose, className }) {
   function overlayOnClick(e) {
     e.stopPropagation()
     e.preventDefault()
     onClose()
   }
 
-  function menuOnClick(e) {
+  function onKeyDown(e) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault()
+      e.stopPropagation()
+      onClose()
+    }
+  }
+
+  function stopPropagation(e) {
     e.stopPropagation()
-    e.preventDefault()
   }
 
   return createPortal(
     <div
       class="kef-kb-menu-overlay"
-      onMouseDown={menuOnClick}
+      onMouseDown={stopPropagation}
       onClick={overlayOnClick}
+      onKeyDown={onKeyDown}
     >
       <div
-        class="kef-kb-menu"
+        class={cls("kef-kb-menu", className)}
         style={{ top: `${y}px`, left: `${x}px` }}
-        onClick={menuOnClick}
+        onClick={stopPropagation}
       >
         {children}
       </div>

@@ -6,9 +6,11 @@ export async function parseContent(content, coverProp) {
     m[2].replace(/\[\[([^\]]+)\]\]/g, "$1"),
   ])
 
-  const tags = Array.from(
-    content.matchAll(/(?:^|\s)#(?:(?:\[\[((?:[^\]]|\](?!\]))+)\]\])|(\S+))/g),
-  ).map((m) => m[1] ?? m[2])
+  const tags = new Set(
+    Array.from(
+      content.matchAll(/(?:^|\s)#(?:(?:\[\[((?:[^\]]|\](?!\]))+)\]\])|(\S+))/g),
+    ).map((m) => m[1] ?? m[2]),
+  )
 
   const coverIndex = props.findIndex(([k]) => k === coverProp)
   const cover = coverIndex > -1 ? await getImgSrc(props[coverIndex][1]) : null

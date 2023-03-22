@@ -3,7 +3,7 @@ import { t } from "logseq-l10n"
 import { useContext, useEffect, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
 import { BoardContext } from "../libs/contexts"
-import { parseContent, persistBlockUUID } from "../libs/utils"
+import { persistBlockUUID } from "../libs/utils"
 import Menu from "./Menu"
 import Popup from "./Popup"
 
@@ -15,25 +15,19 @@ export default function KanbanCard({
   coverProp = "cover",
   index,
 }) {
-  const [data, setData] = useState()
   const [menuData, setMenuData] = useState({ visible: false })
   const { listNames, writeDuration } = useContext(BoardContext)
 
   useEffect(() => {
     if (block == null) return
     ;(async () => {
-      const [content, tags, properties, cover, scheduled, deadline] =
-        await parseContent(block.content, coverProp)
-      setData({ content, tags, properties, cover, scheduled, deadline })
-
       if (noDuration(block, block.properties[property])) {
         await writeDuration(block, block.properties[property])
       }
     })()
   }, [block])
 
-  if (data == null || data.tags.some((tag) => tag === ".kboard-placeholder"))
-    return null
+  if (block.data.tags.has(".kboard-placeholder")) return null
 
   function openBlock() {
     logseq.Editor.openInRightSidebar(block.uuid)
@@ -122,7 +116,7 @@ export default function KanbanCard({
     )
   }
 
-  const properties = data.properties?.filter(
+  const properties = block.data.props?.filter(
     ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
   )
 
@@ -137,15 +131,17 @@ export default function KanbanCard({
           onClick={openBlock}
           onMouseDown={onMouseDown}
         >
-          {data.cover && <img class="kef-kb-card-cover" src={data.cover} />}
+          {block.data.cover && (
+            <img class="kef-kb-card-cover" src={block.data.cover} />
+          )}
           <div class="kef-kb-card-content">
-            <span>{data.content}</span>
+            <span>{block.data.content}</span>
             <Popup popup={renderDuration}>
               <span class="kef-kb-card-duration">&#xf319;</span>
             </Popup>
           </div>
           <div class="kef-kb-card-tags">
-            {data.tags.map((tag) => (
+            {Array.from(block.data.tags).map((tag) => (
               <div
                 key={tag}
                 class="kef-kb-card-tag"
@@ -155,7 +151,9 @@ export default function KanbanCard({
               </div>
             ))}
           </div>
-          {(properties?.length > 0 || data.scheduled || data.deadline) && (
+          {(properties?.length > 0 ||
+            block.data.scheduled ||
+            block.data.deadline) && (
             <div class="kef-kb-card-props">
               {properties.map(([name, value]) => (
                 <>
@@ -163,16 +161,18 @@ export default function KanbanCard({
                   <div class="kef-kb-card-props-val">{value}</div>
                 </>
               ))}
-              {data.scheduled && (
+              {block.data.scheduled && (
                 <>
                   <div class="kef-kb-card-props-key">{t("scheduled")}</div>
-                  <div class="kef-kb-card-props-val">{data.scheduled}</div>
+                  <div class="kef-kb-card-props-val">
+                    {block.data.scheduled}
+                  </div>
                 </>
               )}
-              {data.deadline && (
+              {block.data.deadline && (
                 <>
                   <div class="kef-kb-card-props-key">{t("deadline")}</div>
-                  <div class="kef-kb-card-props-val">{data.deadline}</div>
+                  <div class="kef-kb-card-props-val">{block.data.deadline}</div>
                 </>
               )}
             </div>
