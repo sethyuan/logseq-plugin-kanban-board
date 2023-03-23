@@ -11,7 +11,7 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
 ## Features
 
 - Create Kanban boards using Logseq list data.
-- New cards can be created directly in the Kanban list.
+- New lists and cards can be created directly within the Kanban list.
 - Click on a card to open the block corresponding to the card in the right sidebar.
 - Drag a card to sort between the different lists.
 - Drag a list to sort the lists.
@@ -22,6 +22,7 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
   ```
   Here `bg` is the property with the image path. The image path can be a relative path in Logseq or a local absolute path or an URL.
 - Tracking of card's duration in each list.
+- You can filter the board's data.
 
 ## List data structure
 

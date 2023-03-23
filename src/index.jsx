@@ -398,6 +398,9 @@ function provideStyles() {
       align-items: center;
       width: 100%;
     }
+    .kef-kb-addone-addbtn:hover {
+      color: var(--ls-active-secondary-color);
+    }
     .kef-kb-addone-input {
       line-height: 1.5;
       padding: 5px 8px;
