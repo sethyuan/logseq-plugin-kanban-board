@@ -424,6 +424,11 @@ function provideStyles() {
     .kef-kb-addone-btn:hover {
       color: var(--ls-active-secondary-color);
     }
+    .kef-kb-addlist {
+      flex: 0 0 auto;
+      width: 260px;
+      padding: 0 8px;
+    }
     .kef-kb-menu-overlay {
       position: fixed;
       top: 0;
@@ -583,7 +588,7 @@ async function getBoardData(boardUUID, property) {
       ? `[[${block.properties[property][0]}]]`
       : block.properties[property],
   )
-  return { name, lists, tags }
+  return { name, uuid: boardUUID, lists, tags }
 }
 
 async function getChildren(uuid, property) {

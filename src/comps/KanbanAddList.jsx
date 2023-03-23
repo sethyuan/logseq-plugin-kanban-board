@@ -1,15 +1,13 @@
 import { t } from "logseq-l10n"
-import { useContext, useEffect, useRef, useState } from "preact/hooks"
+import { useEffect, useRef, useState } from "preact/hooks"
 import { useWaitedAction } from "reactutils"
-import { BoardContext } from "../libs/contexts"
 import PlusIcon from "./PlusIcon"
 
 const BUTTON = 1
 const INPUT = 2
 
-export default function KanbanAddOne({ list }) {
+export default function KanbanAddList({ onAddList }) {
   const [mode, setMode] = useState(BUTTON)
-  const { addCard } = useContext(BoardContext)
   const inp = useRef()
 
   useEffect(() => {
@@ -22,7 +20,7 @@ export default function KanbanAddOne({ list }) {
     async (e) => {
       e.preventDefault()
       e.stopPropagation()
-      await addCard(list, inp.current.value)
+      await onAddList(inp.current.value)
       setMode(BUTTON)
     },
   )
@@ -45,12 +43,7 @@ export default function KanbanAddOne({ list }) {
       case "Enter": {
         if (e.isComposing) return
         e.preventDefault()
-        if (e.shiftKey) {
-          const t = e.target
-          t.setRangeText("\n", t.selectionStart, t.selectionEnd, "end")
-        } else {
-          onAdd(e)
-        }
+        onAdd(e)
         break
       }
       default:
@@ -59,10 +52,10 @@ export default function KanbanAddOne({ list }) {
   }
 
   return (
-    <form class="kef-kb-addone" onSubmit={onAdd} onMouseDown={stopPropagation}>
+    <form class="kef-kb-addlist" onSubmit={onAdd} onMouseDown={stopPropagation}>
       {mode === BUTTON ? (
         <button class="kef-kb-addone-addbtn" onClick={changeModeToInput}>
-          <PlusIcon /> {t("Add a card")}
+          <PlusIcon /> {t("Add new list")}
         </button>
       ) : (
         <>

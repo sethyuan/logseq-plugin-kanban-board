@@ -10,6 +10,7 @@ import {
 } from "../../deps/react-beautiful-dnd"
 import { BoardContext } from "../libs/contexts"
 import DropDown from "./Dropdown"
+import KanbanAddList from "./KanbanAddList"
 import KanbanList from "./KanbanList"
 
 const TAGOP_AND = 0
@@ -424,6 +425,11 @@ export default function KanbanBoard({ board, property, coverProp }) {
     [data],
   )
 
+  async function addList(name) {
+    const content = `placeholder #.kboard-placeholder\n${property}:: ${name}`
+    await logseq.Editor.insertBlock(board.uuid, content, { sibling: false })
+  }
+
   if (view?.lists == null) return null
 
   return (
@@ -469,6 +475,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
                   />
                 ))}
                 {provided.placeholder}
+                <KanbanAddList onAddList={addList} />
               </div>
             </div>
           )}

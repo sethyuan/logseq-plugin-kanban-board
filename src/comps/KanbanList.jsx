@@ -1,5 +1,5 @@
 import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
-import KanbanAddOne from "./KanbanAddOne"
+import KanbanAddCard from "./KanbanAddCard"
 import KanbanCard from "./KanbanCard"
 
 export default function KanbanList({
@@ -43,7 +43,7 @@ export default function KanbanList({
             )}
           </Droppable>
 
-          <KanbanAddOne list={name} />
+          <KanbanAddCard list={name} />
         </div>
       )}
     </Draggable>
