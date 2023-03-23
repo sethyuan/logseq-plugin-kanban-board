@@ -477,8 +477,6 @@ async function getChildren(uuid, property) {
   ).flat()
   const map = new Map()
   for (const block of dbResult) {
-    // HACK: workaround properties being not extensible.
-    block.properties = { ...block.properties }
     if (Array.isArray(block.properties[property])) {
       block.properties[property] = `[[${block.properties[property][0]}]]`
     }

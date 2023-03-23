@@ -166,7 +166,6 @@ export default function KanbanBoard({ board, property, coverProp }) {
 
       async writeDuration(block, listName) {
         const value = updatedDurationValue(block, listName)
-        block.properties.duration = value
         await logseq.Editor.upsertBlockProperty(block.uuid, "duration", value)
       },
     }),
