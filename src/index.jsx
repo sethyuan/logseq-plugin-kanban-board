@@ -558,7 +558,7 @@ async function renderKanban(id, boardUUID, property, coverProp) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  const data = await getBoardData(boardUUID, property)
+  const data = await getBoardData(boardUUID, property, coverProp)
   await maintainPlaceholders(data.lists, property)
   render(
     <KanbanBoard board={data} property={property} coverProp={coverProp} />,
@@ -566,10 +566,10 @@ async function renderKanban(id, boardUUID, property, coverProp) {
   )
 }
 
-async function getBoardData(boardUUID, property) {
+async function getBoardData(boardUUID, property, coverProp) {
   const boardContent = (await logseq.Editor.getBlock(boardUUID)).content
   const [name] = await parseContent(boardContent)
-  const [blocks, tags] = await getChildren(boardUUID, property)
+  const [blocks, tags] = await getChildren(boardUUID, property, coverProp)
   const lists = groupBy(blocks, (block) =>
     Array.isArray(block.properties[property])
       ? `[[${block.properties[property][0]}]]`
@@ -578,7 +578,7 @@ async function getBoardData(boardUUID, property) {
   return { name, uuid: boardUUID, lists, tags }
 }
 
-async function getChildren(uuid, property) {
+async function getChildren(uuid, property, coverProp) {
   const dbResult = (
     await logseq.DB.datascriptQuery(
       `[:find (pull ?b [*])
@@ -603,7 +603,7 @@ async function getChildren(uuid, property) {
     map.set(block.left.id, block)
 
     const [content, tags, props, cover, scheduled, deadline] =
-      await parseContent(block.content)
+      await parseContent(block.content, coverProp)
     block.data = {
       content,
       tags,

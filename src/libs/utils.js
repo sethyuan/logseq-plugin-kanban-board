@@ -1,6 +1,6 @@
 import { parse } from "./marked-renderer.js"
 
-export async function parseContent(content, coverProp) {
+export async function parseContent(content, coverProp = "cover") {
   const props = Array.from(content.matchAll(/^(.+):: (.+)$/gm)).map((m) => [
     m[1],
     m[2],
@@ -39,7 +39,7 @@ export async function parseContent(content, coverProp) {
     try {
       const refBlock = await logseq.Editor.getBlock(refUUID)
       const refFirstLine = refBlock.content.match(/.*/)[0]
-      const refContent = await parseContent(refFirstLine)
+      const refContent = await parseContent(refFirstLine, coverProp)
       content = `${content.substring(0, start)}${refContent}${content.substring(
         end,
       )}`

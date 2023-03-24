@@ -242,7 +242,6 @@ export default function KanbanBoard({ board, property, coverProp }) {
 
   const changeTextFilter = useCallback(
     debounce((e) => {
-      console.log(e.target.value)
       setTextFilter(e.target.value)
     }, 200),
     [],
