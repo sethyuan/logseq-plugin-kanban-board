@@ -49,29 +49,16 @@ async function main() {
     })
   })
 
-  logseq.Editor.registerSlashCommand("Kanban Board (Sample)", async () => {
+  logseq.Editor.registerSlashCommand("Kanban Board (Empty)", async () => {
     const currentBlock = await logseq.Editor.getCurrentBlock()
     const uuid = await logseq.Editor.newBlockUUID()
     await logseq.Editor.insertAtEditingCursor(
-      `{{renderer :kboard, ${uuid}, status}}`,
+      `{{renderer :kboard, ${uuid}, list}}`,
     )
-    const boardRoot = await logseq.Editor.insertBlock(
-      currentBlock.uuid,
-      "Sample Kanban",
-      { sibling: true, customUUID: uuid },
-    )
-    await logseq.Editor.insertBatchBlock(
-      boardRoot.uuid,
-      [
-        { content: "item a\nstatus:: TODO" },
-        { content: "placeholder #.kboard-placeholder\nstatus:: TODO" },
-        { content: "item b\nstatus:: Doing" },
-        { content: "placeholder #.kboard-placeholder\nstatus:: Doing" },
-        { content: "item c\nstatus:: Done" },
-        { content: "placeholder #.kboard-placeholder\nstatus:: Done" },
-      ],
-      { sibling: false },
-    )
+    await logseq.Editor.insertBlock(currentBlock.uuid, "Kanban", {
+      sibling: true,
+      customUUID: uuid,
+    })
   })
 
   logseq.Editor.registerBlockContextMenuItem(
@@ -556,16 +543,13 @@ function watchBlockChildrenChange(id, elID, callback) {
       return
     }
 
+    const predicate = (block) => block.id === id || block.parent?.id === id
     if (
       txMeta &&
       txMeta.outlinerOp !== "insertBlock" &&
-      blocks.some((block) => block.parent?.id === id)
+      blocks.some(predicate)
     ) {
-      callback(
-        blocks.filter((block) => block.parent?.id === id),
-        txData,
-        txMeta,
-      )
+      callback(blocks.filter(predicate), txData, txMeta)
     }
   })
 }
@@ -632,7 +616,7 @@ async function getChildren(uuid, property) {
       allTags.add(tag)
     }
   }
-  for (let i = 0, id = dbResult[0].parent.id; i < dbResult.length; i++) {
+  for (let i = 0, id = dbResult[0]?.parent.id; i < dbResult.length; i++) {
     const b = map.get(id) ?? dbResult[i]
     dbResult[i] = b
     id = b.id

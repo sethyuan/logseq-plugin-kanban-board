@@ -3,7 +3,7 @@ import { parse } from "./marked-renderer.js"
 export async function parseContent(content, coverProp) {
   const props = Array.from(content.matchAll(/^(.+):: (.+)$/gm)).map((m) => [
     m[1],
-    m[2].replace(/\[\[([^\]]+)\]\]/g, "$1"),
+    m[2],
   ])
 
   const tags = new Set(

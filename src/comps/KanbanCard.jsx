@@ -120,6 +120,21 @@ export default function KanbanCard({
     ([name]) => name !== property && !HIDDEN_PROP_NAMES.has(name),
   )
 
+  function renderPropValue(value) {
+    const pattern = /\[\[([^\]]+)\]\]|#\[\[([^\]]+)\]\]|#(\S+)/g
+    const ret = []
+    let match
+    let last = 0
+    while ((match = pattern.exec(value)) != null) {
+      ret.push(value.substring(last, match.index))
+      const pageName = match[1] ?? match[2] ?? match[3]
+      ret.push(<a onClick={(e) => openTag(e, pageName)}>{pageName}</a>)
+      last = pattern.lastIndex
+    }
+    ret.push(value.substring(last))
+    return ret
+  }
+
   return (
     <Draggable draggableId={`${block.id}`} index={index}>
       {(provided, snapshot) => (
@@ -158,7 +173,9 @@ export default function KanbanCard({
               {properties.map(([name, value]) => (
                 <>
                   <div class="kef-kb-card-props-key">{name}</div>
-                  <div class="kef-kb-card-props-val">{value}</div>
+                  <div class="kef-kb-card-props-val">
+                    {renderPropValue(value)}
+                  </div>
                 </>
               ))}
               {block.data.scheduled && (
