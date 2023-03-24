@@ -54,7 +54,11 @@ export default function KanbanAddList({ onAddList }) {
   return (
     <form class="kef-kb-addlist" onSubmit={onAdd} onMouseDown={stopPropagation}>
       {mode === BUTTON ? (
-        <button class="kef-kb-addone-addbtn" onClick={changeModeToInput}>
+        <button
+          class="kef-kb-addone-addbtn"
+          type="button"
+          onClick={changeModeToInput}
+        >
           <PlusIcon /> {t("Add new list")}
         </button>
       ) : (

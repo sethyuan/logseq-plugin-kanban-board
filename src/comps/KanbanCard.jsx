@@ -87,33 +87,39 @@ export default function KanbanCard({
   }
 
   function renderDuration() {
-    const durationData = JSON.parse(block.properties.duration)
-    return (
-      <div class="kef-kb-card-duration-popup">
-        {listNames
-          .map((list) => {
-            const isPage = list.startsWith("[[")
-            const durationListData =
-              durationData[isPage ? `{${list.substring(1)}` : list]
-            if (durationListData == null) return null
-            const [acc, last] = durationListData
-            const nowTs = Date.now()
-            const now = new Date(nowTs + acc)
-            const backThen = last === 0 ? new Date(nowTs) : new Date(last)
-            return (
-              <>
-                <span class="kef-kb-card-duration-popup-l">
-                  {isPage ? list.substring(2, list.length - 2) : list}
-                </span>
-                <span class="kef-kb-card-duration-popup-v">
-                  {formatDistance(now, backThen)}
-                </span>
-              </>
-            )
-          })
-          .filter((x) => x != null)}
-      </div>
-    )
+    if (block.properties.duration == null) return null
+    try {
+      const durationData = JSON.parse(block.properties.duration)
+      return (
+        <div class="kef-kb-card-duration-popup">
+          {listNames
+            .map((list) => {
+              const isPage = list.startsWith("[[")
+              const durationListData =
+                durationData[isPage ? `{${list.substring(1)}` : list]
+              if (durationListData == null) return null
+              const [acc, last] = durationListData
+              const nowTs = Date.now()
+              const now = new Date(nowTs + acc)
+              const backThen = last === 0 ? new Date(nowTs) : new Date(last)
+              return (
+                <>
+                  <span class="kef-kb-card-duration-popup-l">
+                    {isPage ? list.substring(2, list.length - 2) : list}
+                  </span>
+                  <span class="kef-kb-card-duration-popup-v">
+                    {formatDistance(now, backThen)}
+                  </span>
+                </>
+              )
+            })
+            .filter((x) => x != null)}
+        </div>
+      )
+    } catch (err) {
+      console.error(err)
+      return null
+    }
   }
 
   const properties = block.data.props?.filter(

@@ -61,7 +61,11 @@ export default function KanbanAddCard({ list }) {
   return (
     <form class="kef-kb-addone" onSubmit={onAdd} onMouseDown={stopPropagation}>
       {mode === BUTTON ? (
-        <button class="kef-kb-addone-addbtn" onClick={changeModeToInput}>
+        <button
+          class="kef-kb-addone-addbtn"
+          type="button"
+          onClick={changeModeToInput}
+        >
           <PlusIcon /> {t("Add a card")}
         </button>
       ) : (

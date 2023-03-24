@@ -457,8 +457,10 @@ export default function KanbanBoard({ board, property, coverProp }) {
                   <span
                     class={cls(
                       "kef-kb-filter-icon",
-                      (textFilter.length > 0 || tagsFilter.tags.length > 0) &&
-                        "kef-kb-filter-on",
+                      Object.entries(view.lists).some(
+                        ([name, list]) =>
+                          list.length !== board.lists[name].length,
+                      ) && "kef-kb-filter-on",
                     )}
                   >
                     &#xeaa5;
