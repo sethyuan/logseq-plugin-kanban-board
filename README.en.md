@@ -44,4 +44,4 @@ There are 3 ways to create a Kanban:
 
 1. Using the slash command `/Kanban Board`, input the block reference and the property name in above data format in the dialog that opens.
 1. Click the dot on the root block (`board` in the above example) to open the context menu, select `Kanban Board`, and input the property name in the dialog that opens, the block reference is filled for you automatically.
-1. Using the slash command `/Kanban Board (Sample)`, the plugin will automatically create a sample kanban board and its corresponding data for you.
+1. Using the slash command `/Kanban Board (Empty)`, the plugin will automatically create an empty kanban board and its data for you.
