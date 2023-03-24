@@ -9,7 +9,7 @@ import {
   useMouseSensor,
 } from "../../deps/react-beautiful-dnd"
 import { BoardContext } from "../libs/contexts"
-import DropDown from "./Dropdown"
+import DropDown from "./DropDown"
 import KanbanAddList from "./KanbanAddList"
 import KanbanList from "./KanbanList"
 
