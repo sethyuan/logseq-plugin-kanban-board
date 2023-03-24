@@ -313,7 +313,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
           draft[i].value = e.target.value
         }),
       )
-    }),
+    }, 200),
     [],
   )
   const propValueChangeProps = useCompositionChange(changePropValue)
