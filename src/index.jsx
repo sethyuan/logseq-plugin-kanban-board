@@ -146,6 +146,16 @@ function provideStyles() {
       font-weight: 600;
       padding: 0 4px;
     }
+    .kef-kb-board-name span {
+      cursor: pointer;
+    }
+    .kef-kb-board-name input {
+      background-color: var(--ls-primary-background-color);
+    }
+    .kef-kb-board-name input:focus {
+      outline: none;
+      box-shadow: none;
+    }
     .kef-kb-filter-icon {
       font-family: 'tabler-icons';
       font-weight: 400;
@@ -278,9 +288,14 @@ function provideStyles() {
       background-color: var(--ls-secondary-background-color);
       box-shadow: 1px 1px 6px 0 #88888894;
     }
-    .kef-kb-list-name {
-      margin: 0;
+    .kef-kb-list-title {
+      display: flex;
+      align-items: center;
       padding: 0 8px;
+    }
+    .kef-kb-list-name {
+      flex: 0 1 auto;
+      margin: 0;
       font-size: 1.25em;
       font-weight: 600;
       line-height: 2;
@@ -288,10 +303,21 @@ function provideStyles() {
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    .kef-kb-list-name span {
+      cursor: pointer;
+    }
+    .kef-kb-list-name input {
+      background-color: var(--ls-primary-background-color);
+    }
+    .kef-kb-list-name input:focus {
+      outline: none;
+      box-shadow: none;
+    }
     .kef-kb-list-size {
+      flex: 0 0 auto;
       font-size: 0.75em;
-      margin-left: 0.3em;
       font-weight: 400;
+      margin-left: 0.3em;
     }
     .kef-kb-list-cards {
       overflow-y: auto;

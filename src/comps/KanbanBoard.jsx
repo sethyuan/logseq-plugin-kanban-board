@@ -6,16 +6,18 @@ import {
   Droppable,
   useMouseSensor,
 } from "../../deps/react-beautiful-dnd"
-import useDragMove from "../hooks/drag-move"
-import useFilter from "../hooks/filter"
+import useBoardName from "../hooks/useBoardName"
+import useDragMove from "../hooks/useDragMove"
+import useFilter from "../hooks/useFilter"
 import { BoardContext } from "../libs/contexts"
 import DropDown from "./DropDown"
 import KanbanAddList from "./KanbanAddList"
 import KanbanList from "./KanbanList"
 
 export default function KanbanBoard({ board, property, coverProp }) {
-  const { view, renderFilterPopup } = useFilter(board)
+  const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
+  const nameView = useBoardName(board.name, board.uuid)
 
   async function addList(name) {
     const content = `placeholder #.kboard-placeholder\n${property}:: ${name}`
@@ -175,14 +177,46 @@ export default function KanbanBoard({ board, property, coverProp }) {
     await logseq.Editor.upsertBlockProperty(block.uuid, "duration", value)
   }, [])
 
+  const renameList = useCallback(
+    async (oldName, newName) => {
+      await Promise.all(
+        board.lists[oldName].map(async (block) => {
+          await logseq.Editor.upsertBlockProperty(block.uuid, property, newName)
+        }),
+      )
+      for (const list of Object.values(board.lists)) {
+        await Promise.all(
+          list.map(async (block) => {
+            const durationData = JSON.parse(block.properties.duration)
+            if (durationData[oldName] != null) {
+              durationData[newName] = durationData[oldName]
+              delete durationData[oldName]
+              await logseq.Editor.upsertBlockProperty(
+                block.uuid,
+                "duration",
+                JSON.stringify(durationData),
+              )
+            }
+          }),
+        )
+      }
+    },
+    [board],
+  )
+
   const contextValue = useMemo(
     () => ({
       listNames: Object.keys(board.lists),
       addCard,
       writeDuration,
+      renameList,
     }),
     [board],
   )
+
+  function stopPropagation(e) {
+    e.stopPropagation()
+  }
 
   if (view?.lists == null) return null
 
@@ -199,9 +233,10 @@ export default function KanbanBoard({ board, property, coverProp }) {
               class="kef-kb-board"
               ref={provided.innerRef}
               {...provided.droppableProps}
+              onMouseDown={stopPropagation}
             >
               <div class="kef-kb-board-name">
-                <span>{view.name}</span>
+                {nameView}
                 <DropDown
                   popup={renderFilterPopup}
                   popupClass="kef-kb-filter-menu"
@@ -211,7 +246,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
                       "kef-kb-filter-icon",
                       Object.entries(view.lists).some(
                         ([name, list]) =>
-                          list.length !== board.lists[name].length,
+                          list.length !== board.lists[name]?.length,
                       ) && "kef-kb-filter-on",
                     )}
                   >

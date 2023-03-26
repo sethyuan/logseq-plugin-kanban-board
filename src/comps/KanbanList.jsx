@@ -1,4 +1,7 @@
+import { useContext } from "preact/hooks"
 import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
+import useListName from "../hooks/useListName"
+import { BoardContext } from "../libs/contexts"
 import KanbanAddCard from "./KanbanAddCard"
 import KanbanCard from "./KanbanCard"
 
@@ -9,6 +12,9 @@ export default function KanbanList({
   coverProp,
   index,
 }) {
+  const { renameList } = useContext(BoardContext)
+  const nameView = useListName(name, renameList)
+
   return (
     <Draggable draggableId={name} index={index}>
       {(provided, snapshot) => (
@@ -17,9 +23,9 @@ export default function KanbanList({
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
-          <div class="kef-kb-list-name" {...provided.dragHandleProps}>
-            <span>{name.replace(/\[\[([^\]]+)\]\]/g, "$1")}</span>
-            <span class="kef-kb-list-size">({blocks.length - 1})</span>
+          <div class="kef-kb-list-title" {...provided.dragHandleProps}>
+            <div class="kef-kb-list-name">{nameView}</div>
+            <div class="kef-kb-list-size">({blocks.length - 1})</div>
           </div>
 
           <Droppable droppableId={name} type="CARD">

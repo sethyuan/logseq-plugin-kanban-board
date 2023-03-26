@@ -253,5 +253,5 @@ export default function useFilter(board) {
     )
   }
 
-  return { view, renderFilterPopup }
+  return { view, setView, renderFilterPopup }
 }
