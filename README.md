@@ -8,13 +8,13 @@
 
 https://user-images.githubusercontent.com/3410293/227445820-d357f604-fc9a-4771-aecc-d07431b21ee6.mp4
 
-
 https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8cb0-159be587087f.mp4
 
 ## 功能
 
 - 使用 Logseq 列表数据创建看板。
 - 可直接在看板列表中新建列表及卡片。
+- 在看板名和列表名上点击可重命名。
 - 点击卡片可在右侧边栏打开卡片对应的块。
 - 拖动卡片可在不同的列表间排序。
 - 拖动列表可对列表排序。
