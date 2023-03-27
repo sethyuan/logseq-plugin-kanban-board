@@ -16,7 +16,7 @@ export default function KanbanCard({
   index,
 }) {
   const [menuData, setMenuData] = useState({ visible: false })
-  const { listNames, writeDuration } = useContext(BoardContext)
+  const { listNames, writeDuration, tagColors } = useContext(BoardContext)
 
   useEffect(() => {
     if (block == null) return
@@ -166,6 +166,11 @@ export default function KanbanCard({
               <div
                 key={tag}
                 class="kef-kb-card-tag"
+                style={
+                  tagColors[tag]
+                    ? { backgroundColor: `#${tagColors[tag]}` }
+                    : null
+                }
                 onClick={(e) => openTag(e, tag)}
               >
                 {tag}

@@ -203,7 +203,15 @@ export default function useFilter(board) {
               checked={tagsFilter.tags.includes(tag)}
               onChange={onTagCheckChange}
             />
-            <span>{tag}</span>
+            <span
+              style={
+                board.configs.tagColors[tag]
+                  ? { backgroundColor: `#${board.configs.tagColors[tag]}` }
+                  : null
+              }
+            >
+              {tag}
+            </span>
           </label>
         ))}
 

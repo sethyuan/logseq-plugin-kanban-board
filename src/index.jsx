@@ -4,13 +4,28 @@ import { zhCN as dateZhCN } from "date-fns/locale"
 import { waitMs } from "jsutils"
 import { setup, t } from "logseq-l10n"
 import { render } from "preact"
-import { debounce } from "rambdax"
+import { debounce, partition, shuffle } from "rambdax"
 import KanbanBoard from "./comps/KanbanBoard"
 import KanbanDialog from "./comps/KanbanDialog"
 import { parseContent, persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
+
+const BUILTIN_COLORS = [
+  "e70c0c",
+  "e76f0c",
+  "e7b20c",
+  "8ce70c",
+  "3ee70c",
+  "0ce7b4",
+  "0ccbe7",
+  "0c9ae7",
+  "0c4ae7",
+  "700ce7",
+  "e60ce7",
+  "e70c7e",
+]
 
 let dialogContainer
 let offHooks = {}
@@ -453,6 +468,10 @@ function provideStyles() {
       right: 0;
       background-color: rgba(0 0 0 / 0);
       z-index: var(--ls-z-index-level-2);
+      overflow: scroll;
+    }
+    .kef-kb-menu-overlay ::-webkit-scrollbar {
+      display: none;
     }
     .kef-kb-menu {
       position: absolute;
@@ -585,7 +604,9 @@ async function renderKanban(id, boardUUID, property, coverProp) {
   if (el == null || !el.isConnected) return
 
   const data = await getBoardData(boardUUID, property, coverProp)
-  await maintainPlaceholders(data.lists, property)
+  if (await maintainPlaceholders(data.lists, property)) return
+  if (await maintainTagColors(boardUUID, data.tags, data.configs.tagColors))
+    return
   render(
     <KanbanBoard board={data} property={property} coverProp={coverProp} />,
     el,
@@ -593,15 +614,18 @@ async function renderKanban(id, boardUUID, property, coverProp) {
 }
 
 async function getBoardData(boardUUID, property, coverProp) {
-  const boardContent = (await logseq.Editor.getBlock(boardUUID)).content
-  const [name] = await parseContent(boardContent)
+  const boardBlock = await logseq.Editor.getBlock(boardUUID)
+  const [name] = await parseContent(boardBlock.content)
   const [blocks, tags] = await getChildren(boardUUID, property, coverProp)
   const lists = groupBy(blocks, (block) =>
     Array.isArray(block.properties[property])
       ? `[[${block.properties[property][0]}]]`
       : block.properties[property],
   )
-  return { name, uuid: boardUUID, lists, tags }
+  const configs = JSON.parse(
+    boardBlock.properties?.configs ?? '{"tagColors": {}}',
+  )
+  return { name, uuid: boardUUID, lists, tags, configs }
 }
 
 async function getChildren(uuid, property, coverProp) {
@@ -665,14 +689,60 @@ function groupBy(arr, selector) {
 }
 
 async function maintainPlaceholders(lists, property) {
+  let maintained = false
   for (const [name, list] of Object.entries(lists)) {
     if (!list.some((block) => block.content.includes(".kboard-placeholder"))) {
-      await logseq.Editor.insertBlock(
+      logseq.Editor.insertBlock(
         list[list.length - 1].uuid,
         `placeholder #.kboard-placeholder\n${property}:: ${name}`,
         { sibling: true },
       )
+      maintained = true
     }
+  }
+  return maintained
+}
+
+async function maintainTagColors(uuid, tags, tagColors) {
+  let maintained = false
+  for (const tag of Object.keys(tagColors)) {
+    if (!tags.has(tag)) {
+      delete tagColors[tag]
+      maintained = true
+    }
+  }
+  const colors = colorPalette(tagColors)
+  const palette = infinitePalette(colors)
+  for (const tag of tags) {
+    if (tagColors[tag] == null) {
+      tagColors[tag] = palette.next().value
+      maintained = true
+    }
+  }
+  if (maintained) {
+    await logseq.Editor.upsertBlockProperty(
+      uuid,
+      "configs",
+      JSON.stringify({ tagColors }),
+    )
+  }
+  return maintained
+}
+
+function colorPalette(tagColors) {
+  const configuredColors = new Set(Object.values(tagColors))
+  const [notUsed, used] = partition(
+    (c) => !configuredColors.has(c),
+    BUILTIN_COLORS,
+  )
+  return shuffle(notUsed).concat(used)
+}
+
+function* infinitePalette(palette) {
+  let i = 0
+  while (true) {
+    const finish = yield palette[i]
+    i = (i + 1) % palette.length
   }
 }
 

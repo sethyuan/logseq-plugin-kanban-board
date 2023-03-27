@@ -210,6 +210,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
       addCard,
       writeDuration,
       renameList,
+      tagColors: board.configs.tagColors,
     }),
     [board],
   )
