@@ -7,7 +7,13 @@ import { persistBlockUUID } from "../libs/utils"
 import Menu from "./Menu"
 import Popup from "./Popup"
 
-const HIDDEN_PROP_NAMES = new Set(["id", "heading", "collapsed", "duration"])
+const HIDDEN_PROP_NAMES = new Set([
+  "id",
+  "heading",
+  "collapsed",
+  "duration",
+  "archived",
+])
 
 export default function KanbanCard({
   block,
@@ -83,6 +89,14 @@ export default function KanbanCard({
       visible: false,
     }))
     await logseq.Editor.removeBlock(block.uuid)
+  }
+
+  async function archiveCard() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await logseq.Editor.upsertBlockProperty(block.uuid, "archived", true)
   }
 
   function renderDuration() {
@@ -215,6 +229,9 @@ export default function KanbanCard({
               </button>
               <button class="kef-kb-menu-item" onClick={deleteCard}>
                 {t("Delete card")}
+              </button>
+              <button class="kef-kb-menu-item" onClick={archiveCard}>
+                {t("Archive card")}
               </button>
             </Menu>
           )}

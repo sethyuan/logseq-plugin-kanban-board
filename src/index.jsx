@@ -617,14 +617,21 @@ async function getBoardData(boardUUID, property, coverProp) {
   const boardBlock = await logseq.Editor.getBlock(boardUUID)
   const [name] = await parseContent(boardBlock.content)
   const [blocks, tags] = await getChildren(boardUUID, property, coverProp)
+  const configs = JSON.parse(
+    boardBlock.properties?.configs ?? '{"tagColors": {}, "archived": []}',
+  )
   const lists = groupBy(blocks, (block) =>
     Array.isArray(block.properties[property])
       ? `[[${block.properties[property][0]}]]`
       : block.properties[property],
   )
-  const configs = JSON.parse(
-    boardBlock.properties?.configs ?? '{"tagColors": {}}',
-  )
+  if (configs.archived) {
+    for (const listName of Object.keys(lists)) {
+      if (configs.archived.includes(listName)) {
+        delete lists[listName]
+      }
+    }
+  }
   return { name, uuid: boardUUID, lists, tags, configs }
 }
 
@@ -632,25 +639,35 @@ async function getChildren(uuid, property, coverProp) {
   const dbResult = (
     await logseq.DB.datascriptQuery(
       `[:find (pull ?b [*])
-       :in $ ?uuid ?prop
+       :in $ ?uuid
        :where
        [?r :block/uuid ?uuid]
-       [?b :block/parent ?r]
-       [?b :block/properties ?props]
-       [(get ?props ?prop)]]`,
+       [?b :block/parent ?r]]`,
       `#uuid "${uuid}"`,
-      `:${property}`,
     )
   ).flat()
-  const allTags = new Set()
+
   const map = new Map()
   for (const block of dbResult) {
+    map.set(block.left.id, block)
+  }
+  for (let i = 0, id = dbResult[0]?.parent.id; i < dbResult.length; i++) {
+    const b = map.get(id)
+    dbResult[i] = b
+    id = b.id
+  }
+
+  const blocks = dbResult.filter(
+    (block) => block.properties[property] && !block.properties.archived,
+  )
+
+  const allTags = new Set()
+  for (const block of blocks) {
     if (Array.isArray(block.properties[property])) {
       block.properties[property] = `[[${block.properties[property][0]}]]`
     } else {
       block.properties[property] = `${block.properties[property]}`
     }
-    map.set(block.left.id, block)
 
     const [content, tags, props, cover, scheduled, deadline] =
       await parseContent(block.content, coverProp)
@@ -666,13 +683,9 @@ async function getChildren(uuid, property, coverProp) {
       allTags.add(tag)
     }
   }
-  for (let i = 0, id = dbResult[0]?.parent.id; i < dbResult.length; i++) {
-    const b = map.get(id) ?? dbResult[i]
-    dbResult[i] = b
-    id = b.id
-  }
   allTags.delete(".kboard-placeholder")
-  return [dbResult, allTags]
+
+  return [blocks, allTags]
 }
 
 function groupBy(arr, selector) {

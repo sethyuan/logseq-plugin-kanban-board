@@ -215,6 +215,23 @@ export default function KanbanBoard({ board, property, coverProp }) {
     [board],
   )
 
+  const archiveList = useCallback(
+    async (name) => {
+      const value = produce(board.configs, (draft) => {
+        if (draft.archived == null) {
+          draft.archived = []
+        }
+        draft.archived.push(name)
+      })
+      await logseq.Editor.upsertBlockProperty(
+        board.uuid,
+        "configs",
+        JSON.stringify(value),
+      )
+    },
+    [board],
+  )
+
   const contextValue = useMemo(
     () => ({
       listNames: Object.keys(board.lists),
@@ -222,6 +239,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
       writeDuration,
       renameList,
       deleteList,
+      archiveList,
       tagColors: board.configs.tagColors,
     }),
     [board],

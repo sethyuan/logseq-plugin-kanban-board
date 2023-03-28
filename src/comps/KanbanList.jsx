@@ -14,7 +14,7 @@ export default function KanbanList({
   coverProp,
   index,
 }) {
-  const { renameList, deleteList } = useContext(BoardContext)
+  const { renameList, deleteList, archiveList } = useContext(BoardContext)
   const nameView = useListName(name, renameList)
   const [menuData, setMenuData] = useState({ visible: false })
 
@@ -40,6 +40,14 @@ export default function KanbanList({
       visible: false,
     }))
     await deleteList(name)
+  }
+
+  async function onArchiveList() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await archiveList(name)
   }
 
   return (
@@ -86,6 +94,9 @@ export default function KanbanList({
             <Menu x={menuData.x} y={menuData.y} onClose={closeMenu}>
               <button class="kef-kb-menu-item" onClick={onDeleteList}>
                 {t("Delete list")}
+              </button>
+              <button class="kef-kb-menu-item" onClick={onArchiveList}>
+                {t("Archive list")}
               </button>
             </Menu>
           )}
