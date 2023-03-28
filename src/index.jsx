@@ -479,7 +479,7 @@ function provideStyles() {
       background-color: var(--ls-secondary-background-color);
       padding: 0.5em 0;
     }
-    .kef-kb-card-menu-item {
+    .kef-kb-menu-item {
       display: block;
       padding: 0.5em 0.75em;
       width: 100%;
@@ -487,7 +487,7 @@ function provideStyles() {
       user-select: none;
       font-size: 0.875em;
     }
-    .kef-kb-card-menu-item:hover {
+    .kef-kb-menu-item:hover {
       background-color: var(--ls-primary-background-color);
     }
     .kef-kb-popup {

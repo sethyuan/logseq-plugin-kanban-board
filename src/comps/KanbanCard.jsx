@@ -83,7 +83,6 @@ export default function KanbanCard({
       visible: false,
     }))
     await logseq.Editor.removeBlock(block.uuid)
-    await logseq.UI.showMsg(t("Deleted."))
   }
 
   function renderDuration() {
@@ -208,14 +207,14 @@ export default function KanbanCard({
 
           {menuData.visible && (
             <Menu x={menuData.x} y={menuData.y} onClose={closeMenu}>
-              <button class="kef-kb-card-menu-item" onClick={copyRef}>
+              <button class="kef-kb-menu-item" onClick={copyRef}>
                 {t("Copy reference")}
               </button>
-              <button class="kef-kb-card-menu-item" onClick={copyEmbed}>
+              <button class="kef-kb-menu-item" onClick={copyEmbed}>
                 {t("Copy as embed")}
               </button>
-              <button class="kef-kb-card-menu-item" onClick={deleteCard}>
-                {t("Delete")}
+              <button class="kef-kb-menu-item" onClick={deleteCard}>
+                {t("Delete card")}
               </button>
             </Menu>
           )}

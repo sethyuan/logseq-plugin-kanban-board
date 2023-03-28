@@ -1,9 +1,11 @@
-import { useContext } from "preact/hooks"
+import { t } from "logseq-l10n"
+import { useContext, useState } from "preact/hooks"
 import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
 import useListName from "../hooks/useListName"
 import { BoardContext } from "../libs/contexts"
 import KanbanAddCard from "./KanbanAddCard"
 import KanbanCard from "./KanbanCard"
+import Menu from "./Menu"
 
 export default function KanbanList({
   name,
@@ -12,8 +14,33 @@ export default function KanbanList({
   coverProp,
   index,
 }) {
-  const { renameList } = useContext(BoardContext)
+  const { renameList, deleteList } = useContext(BoardContext)
   const nameView = useListName(name, renameList)
+  const [menuData, setMenuData] = useState({ visible: false })
+
+  function onMouseDown(e) {
+    e.stopPropagation()
+    if (e.button === 2) {
+      e.preventDefault()
+      setMenuData({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+      })
+    }
+  }
+
+  function closeMenu() {
+    setMenuData((old) => ({ ...old, visible: false }))
+  }
+
+  async function onDeleteList() {
+    setMenuData((data) => ({
+      ...data,
+      visible: false,
+    }))
+    await deleteList(name)
+  }
 
   return (
     <Draggable draggableId={name} index={index}>
@@ -23,7 +50,11 @@ export default function KanbanList({
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
-          <div class="kef-kb-list-title" {...provided.dragHandleProps}>
+          <div
+            class="kef-kb-list-title"
+            {...provided.dragHandleProps}
+            onMouseDown={onMouseDown}
+          >
             <div class="kef-kb-list-name">{nameView}</div>
             <div class="kef-kb-list-size">({blocks.length - 1})</div>
           </div>
@@ -50,6 +81,14 @@ export default function KanbanList({
           </Droppable>
 
           <KanbanAddCard list={name} />
+
+          {menuData.visible && (
+            <Menu x={menuData.x} y={menuData.y} onClose={closeMenu}>
+              <button class="kef-kb-menu-item" onClick={onDeleteList}>
+                {t("Delete list")}
+              </button>
+            </Menu>
+          )}
         </div>
       )}
     </Draggable>

@@ -204,12 +204,24 @@ export default function KanbanBoard({ board, property, coverProp }) {
     [board],
   )
 
+  const deleteList = useCallback(
+    async (name) => {
+      await Promise.all(
+        board.lists[name].map(async (block) => {
+          await logseq.Editor.removeBlock(block.uuid)
+        }),
+      )
+    },
+    [board],
+  )
+
   const contextValue = useMemo(
     () => ({
       listNames: Object.keys(board.lists),
       addCard,
       writeDuration,
       renameList,
+      deleteList,
       tagColors: board.configs.tagColors,
     }),
     [board],
