@@ -51,10 +51,13 @@ export default function KanbanCard({
     e.stopPropagation()
     if (e.button === 2) {
       e.preventDefault()
+      const boardRect = e.target
+        .closest(".kef-kb-board")
+        .getBoundingClientRect()
       setMenuData({
         visible: true,
-        x: e.clientX,
-        y: e.clientY,
+        x: e.clientX - boardRect.x,
+        y: e.clientY - boardRect.y,
       })
     }
   }

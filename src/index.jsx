@@ -148,6 +148,7 @@ function provideStyles() {
 
     .kef-kb-board {
       width: 100%;
+      position: relative;
     }
     .kef-kb-board-lists {
       display: flex;
@@ -182,6 +183,10 @@ function provideStyles() {
     }
     .kef-kb-filter-menu {
       opacity: 0.95;
+      font-size: 1rem;
+    }
+    .kef-kb-filter-menu:focus-visible {
+      outline: none;
     }
     .kef-kb-filter-popup {
       width: 320px;
@@ -370,6 +375,7 @@ function provideStyles() {
     }
     .kef-kb-card-content {
       padding: 8px 8px 0;
+      user-select: none;
     }
     .kef-kb-card-duration {
       font-family: 'tabler-icons';
@@ -410,6 +416,7 @@ function provideStyles() {
       padding: 1px 7px;
       color: #fff;
       cursor: pointer;
+      user-select: none;
     }
     .kef-kb-card-tag:last-child {
       margin-right: 0;
@@ -471,24 +478,12 @@ function provideStyles() {
       width: 260px;
       padding: 0 8px;
     }
-    .kef-kb-menu-overlay {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: rgba(0 0 0 / 0);
-      z-index: var(--ls-z-index-level-2);
-      overflow: scroll;
-    }
-    .kef-kb-menu-overlay ::-webkit-scrollbar {
-      display: none;
-    }
     .kef-kb-menu {
       position: absolute;
       box-shadow: 0 2px 8px 0 var(--ls-block-bullet-color);
       background-color: var(--ls-secondary-background-color);
       padding: 0.5em 0;
+      z-index: var(--ls-z-index-level-2);
     }
     .kef-kb-menu-item {
       display: block;

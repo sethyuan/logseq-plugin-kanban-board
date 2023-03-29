@@ -8,10 +8,13 @@ export default function DropDown({ children, popup, popupClass, ...attrs }) {
 
   function showPopup(e) {
     setPopupShown(true)
+    const boardRect = root.current
+      .closest(".kef-kb-board")
+      .getBoundingClientRect()
     const rect = root.current.getBoundingClientRect()
     setPos({
-      x: rect.x,
-      y: rect.y + rect.height + 6,
+      x: rect.x - boardRect.x,
+      y: rect.y - boardRect.y + rect.height + 6,
     })
   }
 

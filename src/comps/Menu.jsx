@@ -1,12 +1,13 @@
-import { createPortal } from "preact/compat"
+import { waitMs } from "jsutils"
+import { useEffect, useRef } from "preact/hooks"
 import { cls } from "reactutils"
 
 export default function Menu({ x, y, children, onClose, className }) {
-  function overlayOnClick(e) {
-    e.stopPropagation()
-    e.preventDefault()
-    onClose()
-  }
+  const rootRef = useRef()
+
+  useEffect(() => {
+    rootRef.current.focus()
+  }, [])
 
   function onKeyDown(e) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -16,25 +17,32 @@ export default function Menu({ x, y, children, onClose, className }) {
     }
   }
 
+  async function onBlur(e) {
+    await waitMs(100)
+    if (
+      rootRef.current == null ||
+      rootRef.current.contains(parent.document.activeElement)
+    )
+      return
+    onClose()
+  }
+
   function stopPropagation(e) {
     e.stopPropagation()
   }
 
-  return createPortal(
+  return (
     <div
-      class="kef-kb-menu-overlay"
-      onMouseDown={stopPropagation}
-      onClick={overlayOnClick}
+      ref={rootRef}
+      class={cls("kef-kb-menu", className)}
+      tabIndex={-1}
+      style={{ top: `${y}px`, left: `${x}px` }}
       onKeyDown={onKeyDown}
+      onMouseDown={stopPropagation}
+      onClick={stopPropagation}
+      onBlur={onBlur}
     >
-      <div
-        class={cls("kef-kb-menu", className)}
-        style={{ top: `${y}px`, left: `${x}px` }}
-        onClick={stopPropagation}
-      >
-        {children}
-      </div>
-    </div>,
-    parent.document.getElementById("app-container"),
+      {children}
+    </div>
   )
 }
