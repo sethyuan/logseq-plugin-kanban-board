@@ -11,7 +11,7 @@ export default function DropDown({ children, popup, popupClass, ...attrs }) {
     const rect = root.current.getBoundingClientRect()
     setPos({
       x: rect.x,
-      y: rect.y + rect.height + 10,
+      y: rect.y + rect.height + 6,
     })
   }
 

@@ -334,6 +334,17 @@ function provideStyles() {
       font-weight: 400;
       margin-left: 0.3em;
     }
+    .kef-kb-list-expander {
+      flex: 1 1 0%;
+    }
+    .kef-kb-list-menuicon {
+      flex: 0 0 auto;
+      font-family: 'tabler-icons';
+      margin-left: 0.3em;
+    }
+    .kef-kb-list-menuicon:hover {
+      color: var(--ls-active-secondary-color);
+    }
     .kef-kb-list-cards {
       overflow-y: auto;
       max-height: calc(100vh - 300px);
