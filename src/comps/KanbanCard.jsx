@@ -22,7 +22,8 @@ export default function KanbanCard({
   index,
 }) {
   const [menuData, setMenuData] = useState({ visible: false })
-  const { listNames, writeDuration, tagColors } = useContext(BoardContext)
+  const { listNames, writeDuration, tagColors, deleteCard, archiveCard } =
+    useContext(BoardContext)
 
   useEffect(() => {
     if (block == null) return
@@ -86,20 +87,20 @@ export default function KanbanCard({
     await logseq.UI.showMsg(t("Copied."))
   }
 
-  async function deleteCard() {
+  async function onDeleteCard() {
     setMenuData((data) => ({
       ...data,
       visible: false,
     }))
-    await logseq.Editor.removeBlock(block.uuid)
+    await deleteCard(block.uuid)
   }
 
-  async function archiveCard() {
+  async function onArchiveCard() {
     setMenuData((data) => ({
       ...data,
       visible: false,
     }))
-    await logseq.Editor.upsertBlockProperty(block.uuid, "archived", true)
+    await archiveCard(block.uuid)
   }
 
   function renderDuration() {
@@ -230,10 +231,10 @@ export default function KanbanCard({
               <button class="kef-kb-menu-item" onClick={copyEmbed}>
                 {t("Copy as embed")}
               </button>
-              <button class="kef-kb-menu-item" onClick={deleteCard}>
+              <button class="kef-kb-menu-item" onClick={onDeleteCard}>
                 {t("Delete card")}
               </button>
-              <button class="kef-kb-menu-item" onClick={archiveCard}>
+              <button class="kef-kb-menu-item" onClick={onArchiveCard}>
                 {t("Archive card")}
               </button>
             </Menu>

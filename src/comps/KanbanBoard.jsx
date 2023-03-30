@@ -9,6 +9,7 @@ import {
 import useBoardName from "../hooks/useBoardName"
 import useDragMove from "../hooks/useDragMove"
 import useFilter from "../hooks/useFilter"
+import useMenu from "../hooks/useMenu"
 import { BoardContext } from "../libs/contexts"
 import DropDown from "./DropDown"
 import KanbanAddList from "./KanbanAddList"
@@ -18,6 +19,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
   const nameView = useBoardName(board.name, board.uuid)
+  const { renderMenu, resetMenuMode } = useMenu(board, property)
 
   async function addList(name) {
     const content = `placeholder #.kboard-placeholder\n${property}:: ${name}`
@@ -232,6 +234,35 @@ export default function KanbanBoard({ board, property, coverProp }) {
     [board],
   )
 
+  const restoreList = useCallback(
+    async (name) => {
+      const value = produce(board.configs, (draft) => {
+        const index = draft.archived?.indexOf(name)
+        if (index > -1) {
+          draft.archived.splice(index, 1)
+        }
+      })
+      await logseq.Editor.upsertBlockProperty(
+        board.uuid,
+        "configs",
+        JSON.stringify(value),
+      )
+    },
+    [board],
+  )
+
+  const deleteCard = useCallback(async (uuid) => {
+    await logseq.Editor.removeBlock(uuid)
+  }, [])
+
+  const archiveCard = useCallback(async (uuid) => {
+    await logseq.Editor.upsertBlockProperty(uuid, "archived", true)
+  }, [])
+
+  const restoreCard = useCallback(async (uuid) => {
+    await logseq.Editor.removeBlockProperty(uuid, "archived")
+  }, [])
+
   const contextValue = useMemo(
     () => ({
       listNames: Object.keys(board.lists),
@@ -240,6 +271,10 @@ export default function KanbanBoard({ board, property, coverProp }) {
       renameList,
       deleteList,
       archiveList,
+      restoreList,
+      deleteCard,
+      archiveCard,
+      restoreCard,
       tagColors: board.configs.tagColors,
     }),
     [board],
@@ -274,7 +309,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
                 >
                   <span
                     class={cls(
-                      "kef-kb-filter-icon",
+                      "kef-kb-board-icon",
                       Object.entries(view.lists).some(
                         ([name, list]) =>
                           list.length !== board.lists[name]?.length,
@@ -283,6 +318,9 @@ export default function KanbanBoard({ board, property, coverProp }) {
                   >
                     &#xeaa5;
                   </span>
+                </DropDown>
+                <DropDown popup={renderMenu} onPopupHidden={resetMenuMode}>
+                  <span class={cls("kef-kb-board-icon")}>&#xea94;</span>
                 </DropDown>
               </div>
               <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>

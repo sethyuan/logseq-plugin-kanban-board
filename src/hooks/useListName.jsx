@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "preact/hooks"
 const MODE_VIEW = 0
 const MODE_EDIT = 1
 
-export default function useBoardName(name, renameList) {
+export default function useListName(name, renameList) {
   const [mode, setMode] = useState(MODE_VIEW)
   const inputRef = useRef()
 
@@ -44,7 +44,7 @@ export default function useBoardName(name, renameList) {
       <input
         ref={inputRef}
         type="text"
-        size={16}
+        size={14}
         onKeyUp={onKeyUp}
         onBlur={(e) => setMode(MODE_VIEW)}
         defaultValue={name}

@@ -18,7 +18,7 @@ export default function Menu({ x, y, children, onClose, className }) {
   }
 
   async function onBlur(e) {
-    await waitMs(100)
+    await waitMs(200)
     if (
       rootRef.current == null ||
       rootRef.current.contains(parent.document.activeElement)

@@ -37,10 +37,13 @@ export default function useBoardName(name, uuid) {
 
   const nameView =
     mode === MODE_VIEW ? (
-      <span onClick={(e) => setMode(MODE_EDIT)}>{name}</span>
+      <span class="kef-kb-board-name-label" onClick={(e) => setMode(MODE_EDIT)}>
+        {name}
+      </span>
     ) : (
       <input
         ref={inputRef}
+        class="kef-kb-board-name-input"
         type="text"
         onKeyUp={onKeyUp}
         onBlur={(e) => setMode(MODE_VIEW)}

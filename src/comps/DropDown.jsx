@@ -1,7 +1,13 @@
 import { useRef, useState } from "preact/hooks"
 import Menu from "./Menu"
 
-export default function DropDown({ children, popup, popupClass, ...attrs }) {
+export default function DropDown({
+  children,
+  popup,
+  popupClass,
+  onPopupHidden,
+  ...attrs
+}) {
   const [popupShown, setPopupShown] = useState(false)
   const root = useRef()
   const [pos, setPos] = useState()
@@ -20,6 +26,7 @@ export default function DropDown({ children, popup, popupClass, ...attrs }) {
 
   function hidePopup(e) {
     setPopupShown(false)
+    onPopupHidden?.()
   }
 
   function toggleVisibility(e) {

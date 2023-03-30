@@ -21,5 +21,11 @@
   "keyword": "关键词",
   "Reset": "重置",
   "Archive list": "归档列表",
-  "Archive card": "归档卡片"
+  "Archive card": "归档卡片",
+  "Archived": "已归档的",
+  "Confirm deletion!": "确定删除吗？",
+  "Switch to lists": "切换至列表",
+  "Switch to cards": "切换至卡片",
+  "Restore": "复原",
+  "Delete": "删除"
 }
