@@ -220,6 +220,7 @@ function provideStyles() {
       border-radius: 2px;
       font-size: 1em;
       line-height: 1.4;
+      background-color: var(--ls-primary-background-color);
     }
     .kef-kb-filter-select:focus {
       outline: none;
@@ -566,6 +567,64 @@ function provideStyles() {
       padding: 0.5em;
       border: 1px solid var(--ls-border-color);
     }
+    .kef-kb-autoarchive-desc {
+      max-width: 320px;
+      margin: 0.5em 0.75em 0;
+      font-size: 0.875em;
+    }
+    .kef-kb-autoarchive-label {
+      margin: 0.75em 0.75em 0.5em;
+      font-weight: 600;
+    }
+    .kef-kb-autoarchive-list {
+      margin: 0 0.75em 0.5em;
+      width: calc(100% - 2 * 0.75em);
+      padding: 0.3em;
+      border-radius: 2px;
+      font-size: 1em;
+      line-height: 1.4;
+      background-color: var(--ls-primary-background-color);
+    }
+    .kef-kb-autoarchive-list:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-autoarchive-inputrow {
+      display: flex;
+      align-items: baseline;
+      margin: 0 0.75em;
+    }
+    .kef-kb-autoarchive-input {
+      flex: 1 1 auto;
+      border-radius: 2px;
+      padding: 0.3em;
+      width: calc(100% - 2 * 0.75em);
+      background-color: var(--ls-primary-background-color) !important;
+      line-height: 1.4;
+    }
+    .kef-kb-autoarchive-input:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    .kef-kb-autoarchive-input:invalid {
+      border: 1px solid red;
+    }
+    .kef-kb-autoarchive-suffix {
+      flex: 0 0 auto;
+      margin-left: 0.75em;
+    }
+    .kef-kb-autoarchive-btns {
+      margin: 1.25em 0.75em 0.5em;
+      display: flex;
+      justify-content: space-between;
+    }
+    .kef-kb-autoarchive-btn {
+      padding: 0 0.25em;
+      cursor: pointer;
+    }
+    .kef-kb-autoarchive-btn:hover {
+      color: var(--ls-active-secondary-color);
+    }
     `,
   })
 }
@@ -676,8 +735,7 @@ async function renderKanban(id, boardUUID, property, coverProp) {
 
   const data = await getBoardData(boardUUID, property, coverProp)
   if (await maintainPlaceholders(data.lists, property)) return
-  if (await maintainTagColors(boardUUID, data.tags, data.configs.tagColors))
-    return
+  if (await maintainTagColors(boardUUID, data.tags, data.configs)) return
   render(
     <KanbanBoard board={data} property={property} coverProp={coverProp} />,
     el,
@@ -687,15 +745,16 @@ async function renderKanban(id, boardUUID, property, coverProp) {
 async function getBoardData(boardUUID, property, coverProp) {
   const boardBlock = await logseq.Editor.getBlock(boardUUID)
   const [name] = await parseContent(boardBlock.content)
-  const [blocks, tags] = await getChildren(boardUUID, property, coverProp)
   const configs = JSON.parse(
     boardBlock.properties?.configs ?? '{"tagColors": {}, "archived": []}',
   )
-  const lists = groupBy(blocks, (block) =>
-    Array.isArray(block.properties[property])
-      ? `[[${block.properties[property][0]}]]`
-      : block.properties[property],
+  const [blocks, tags] = await getChildren(
+    boardUUID,
+    property,
+    coverProp,
+    configs,
   )
+  const lists = groupBy(blocks, (block) => block.properties[property])
   if (configs.archived) {
     for (const listName of Object.keys(lists)) {
       if (configs.archived.includes(listName)) {
@@ -706,7 +765,7 @@ async function getBoardData(boardUUID, property, coverProp) {
   return { name, uuid: boardUUID, lists, tags, configs }
 }
 
-async function getChildren(uuid, property, coverProp) {
+async function getChildren(uuid, property, coverProp, configs) {
   const dbResult = (
     await logseq.DB.datascriptQuery(
       `[:find (pull ?b [*])
@@ -728,18 +787,54 @@ async function getChildren(uuid, property, coverProp) {
     id = b.id
   }
 
-  const blocks = dbResult.filter(
+  const filtered = dbResult.filter(
     (block) => block.properties[property] && !block.properties.archived,
   )
-
-  const allTags = new Set()
-  for (const block of blocks) {
+  for (const block of filtered) {
     if (Array.isArray(block.properties[property])) {
       block.properties[property] = `[[${block.properties[property][0]}]]`
     } else {
       block.properties[property] = `${block.properties[property]}`
     }
+  }
 
+  const [blocksToArchive, blocks] =
+    configs.autoArchiving != null
+      ? partition((block) => {
+          if (block.properties[property] !== configs.autoArchiving.list)
+            return false
+          if (!block.properties.duration) return false
+          if (block.content.includes("#.kboard-placeholder")) return false
+          const duration = JSON.parse(block.properties.duration)
+          const isPage = configs.autoArchiving.list.startsWith("[[")
+          const durationList =
+            duration[
+              isPage
+                ? `{${configs.autoArchiving.list.substring(1)}`
+                : configs.autoArchiving.list
+            ]
+          if (durationList == null) return false
+          const [acc, last] = durationList
+          const nowTs = Date.now()
+          const now = nowTs + acc
+          const elapsed = now - (last || nowTs)
+          const dur =
+            isNaN(configs.autoArchiving.duration) ||
+            configs.autoArchiving.duration < 1
+              ? 1
+              : configs.autoArchiving.duration
+          return elapsed > dur * 24 * 60 * 60 * 1000
+        }, filtered)
+      : [[], filtered]
+
+  await Promise.all(
+    blocksToArchive.map((block) =>
+      logseq.Editor.upsertBlockProperty(block.uuid, "archived", true),
+    ),
+  )
+
+  const allTags = new Set()
+  for (const block of blocks) {
     const [content, tags, props, cover, scheduled, deadline] =
       await parseContent(block.content, coverProp)
     block.data = {
@@ -787,19 +882,19 @@ async function maintainPlaceholders(lists, property) {
   return maintained
 }
 
-async function maintainTagColors(uuid, tags, tagColors) {
+async function maintainTagColors(uuid, tags, configs) {
   let maintained = false
-  for (const tag of Object.keys(tagColors)) {
+  for (const tag of Object.keys(configs.tagColors)) {
     if (!tags.has(tag)) {
-      delete tagColors[tag]
+      delete configs.tagColors[tag]
       maintained = true
     }
   }
-  const colors = colorPalette(tagColors)
+  const colors = colorPalette(configs.tagColors)
   const palette = infinitePalette(colors)
   for (const tag of tags) {
-    if (tagColors[tag] == null) {
-      tagColors[tag] = palette.next().value
+    if (configs.tagColors[tag] == null) {
+      configs.tagColors[tag] = palette.next().value
       maintained = true
     }
   }
@@ -807,7 +902,7 @@ async function maintainTagColors(uuid, tags, tagColors) {
     await logseq.Editor.upsertBlockProperty(
       uuid,
       "configs",
-      JSON.stringify({ tagColors }),
+      JSON.stringify(configs),
     )
   }
   return maintained

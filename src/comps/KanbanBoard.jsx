@@ -260,8 +260,44 @@ export default function KanbanBoard({ board, property, coverProp }) {
   }, [])
 
   const restoreCard = useCallback(async (uuid) => {
+    const card = await logseq.Editor.getBlock(uuid)
+    const duration = card.properties.duration
+      ? JSON.parse(card.properties.duration)
+      : {}
+    delete duration[
+      Array.isArray(card.properties[property])
+        ? `{[${card.properties[property][0]}]]`
+        : `${card.properties[property]}`
+    ]
+    await logseq.Editor.upsertBlockProperty(
+      uuid,
+      "duration",
+      JSON.stringify(duration),
+    )
     await logseq.Editor.removeBlockProperty(uuid, "archived")
   }, [])
+
+  const saveAutoArchiving = useCallback(
+    async (list, duration) => {
+      let value
+      if (list == null) {
+        // clear config.
+        value = produce(board.configs, (draft) => {
+          delete draft.autoArchiving
+        })
+      } else {
+        value = produce(board.configs, (draft) => {
+          draft.autoArchiving = { list, duration }
+        })
+      }
+      await logseq.Editor.upsertBlockProperty(
+        board.uuid,
+        "configs",
+        JSON.stringify(value),
+      )
+    },
+    [board],
+  )
 
   const contextValue = useMemo(
     () => ({
@@ -275,6 +311,7 @@ export default function KanbanBoard({ board, property, coverProp }) {
       deleteCard,
       archiveCard,
       restoreCard,
+      saveAutoArchiving,
       tagColors: board.configs.tagColors,
     }),
     [board],

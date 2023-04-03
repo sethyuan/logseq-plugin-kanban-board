@@ -42,7 +42,7 @@ export default function DropDown({
       {children}
       {popupShown && (
         <Menu className={popupClass} x={pos.x} y={pos.y} onClose={hidePopup}>
-          {popup()}
+          {popup(hidePopup)}
         </Menu>
       )}
     </span>

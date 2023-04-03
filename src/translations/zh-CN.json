@@ -27,5 +27,13 @@
   "Switch to lists": "切换至列表",
   "Switch to cards": "切换至卡片",
   "Restore": "复原",
-  "Delete": "删除"
+  "Delete": "删除",
+  "Auto Archive Setting": "自动归档设置",
+  "Duration must be 1 or greater.": "时长应大于等于1。",
+  "List": "列表",
+  "Duration": "时长",
+  "days": "天",
+  "Save and apply": "保存并应用",
+  "Clear and save": "清除并保存",
+  "Automatically archive the cards in the specified list, whose duration is bigger than the specified days.": "自定将指定列表下时长大于指定天数的卡片归档。"
 }
