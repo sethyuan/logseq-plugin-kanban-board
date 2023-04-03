@@ -26,6 +26,7 @@ https://user-images.githubusercontent.com/3410293/224529450-386f89a8-7449-4a7b-8
   Here `bg` is the property with the image path. The image path can be a relative path in Logseq or a local absolute path or an URL.
 - Tracking of card's duration in each list.
 - You can filter the board's data.
+- Archiving of cards and lists, both manually or automatically.
 
 ## List data structure
 
