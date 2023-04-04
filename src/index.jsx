@@ -35,8 +35,12 @@ async function main() {
 
   provideStyles()
 
-  const { preferredLanguage, preferredStartOfWeek, preferredDateFormat } =
-    await logseq.App.getUserConfigs()
+  const {
+    preferredLanguage,
+    preferredStartOfWeek,
+    preferredDateFormat,
+    preferredWorkflow,
+  } = await logseq.App.getUserConfigs()
   const weekStart = (+(preferredStartOfWeek ?? 6) + 1) % 7
   setDefaultOptions({
     locale: preferredLanguage === "zh-CN" ? dateZhCN : undefined,
@@ -55,6 +59,7 @@ async function main() {
   }, 0)
 
   logseq.App.onMacroRendererSlotted(kanbanRenderer)
+  logseq.App.onMacroRendererSlotted(markerQueryRenderer)
 
   logseq.Editor.registerSlashCommand("Kanban Board", async () => {
     openDialog(async (blockRef, property) => {
@@ -75,6 +80,34 @@ async function main() {
       customUUID: uuid,
     })
   })
+
+  logseq.Editor.registerSlashCommand(
+    "Kanban Board (Marker Query)",
+    async () => {
+      const lists =
+        preferredWorkflow === "now" ? "LATER, NOW, DONE" : "TODO, DOING, DONE"
+      const queryStatuses =
+        preferredWorkflow === "now"
+          ? `"LATER" "NOW" "DONE"`
+          : `"TODO" "DOING" "DONE"`
+      const currentBlock = await logseq.Editor.getCurrentBlock()
+      await logseq.Editor.insertAtEditingCursor(
+        `{{renderer :kboard-marker-query, ${lists}}}`,
+      )
+      await logseq.Editor.insertBlock(
+        currentBlock.uuid,
+        "#+BEGIN_QUERY\n" +
+          "{:query [:find (pull ?b [*])\n" +
+          "        :in $ ?query-page\n" +
+          "        :where\n" +
+          "        [?p :block/name ?query-page]\n" +
+          "        [?b :block/page ?p]\n" +
+          `        (task ?b #{${queryStatuses}})]\n` +
+          ":inputs [:query-page]}\n" +
+          "#+END_QUERY",
+      )
+    },
+  )
 
   logseq.Editor.registerBlockContextMenuItem(
     t("Kanban Board"),
@@ -678,6 +711,40 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
   }, 0)
 }
 
+async function markerQueryRenderer({
+  slot,
+  payload: { arguments: args, uuid },
+}) {
+  if (args.length === 0) return
+  const type = args[0].trim()
+  if (type !== ":kboard-marker-query") return
+
+  const lists = args.slice(1).map((arg) => arg.trim())
+  if (lists.length < 1) return
+
+  const slotEl = parent.document.getElementById(slot)
+  if (!slotEl) return
+  const renderered = slotEl?.childElementCount > 0
+  if (renderered) return
+
+  slotEl.style.width = "100%"
+
+  const key = `kef-kb-${slot}`
+  logseq.provideUI({
+    key,
+    slot,
+    template: `<div id="${key}" style="width: 100%"></div>`,
+    style: {
+      cursor: "default",
+      width: "100%",
+    },
+  })
+
+  setTimeout(async () => {
+    renderMarkerQueryKanban(key, uuid, lists)
+  }, 0)
+}
+
 function openDialog(...args) {
   const [uuid, callback] =
     typeof args[0] === "function" ? [undefined, args[0]] : [args[0], args[1]]
@@ -923,6 +990,13 @@ function* infinitePalette(palette) {
     const finish = yield palette[i]
     i = (i + 1) % palette.length
   }
+}
+
+async function renderMarkerQueryKanban(id, uuid, lists) {
+  const el = parent.document.getElementById(id)
+  if (el == null || !el.isConnected) return
+
+  render(<MarkerQueryBoard uuid={uuid} lists={lists} />, el)
 }
 
 logseq.ready(main).catch(console.error)
