@@ -25,6 +25,10 @@ export default function KanbanList({
     await archiveList(name)
   }
 
+  function stopPropagation(e) {
+    e.stopPropagation()
+  }
+
   function renderMenu() {
     return (
       <>
@@ -47,7 +51,9 @@ export default function KanbanList({
           {...provided.draggableProps}
         >
           <div class="kef-kb-list-title" {...provided.dragHandleProps}>
-            <div class="kef-kb-list-name">{nameView}</div>
+            <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
+              {nameView}
+            </div>
             <div class="kef-kb-list-size">({blocks.length - 1})</div>
             <div class="kef-kb-list-expander" />
             <DropDown popup={renderMenu}>
