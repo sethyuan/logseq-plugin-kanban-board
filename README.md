@@ -10,6 +10,8 @@ https://user-images.githubusercontent.com/3410293/227445820-d357f604-fc9a-4771-a
 
 ![Cover](https://user-images.githubusercontent.com/3410293/229694906-398dba92-f208-482e-9cda-26e4dd466e80.png)
 
+https://user-images.githubusercontent.com/3410293/233775665-38a348f7-83fa-47a3-8a6d-27f876c565bf.mp4
+
 ## 功能
 
 - 使用 Logseq 列表数据创建看板。
