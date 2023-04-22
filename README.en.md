@@ -51,3 +51,13 @@ There are 3 ways to create a Kanban:
 1. Click the dot on the root block (`board` in the above example) to open the context menu, select `Kanban Board`, and input the property name in the dialog that opens, the block reference is filled for you automatically.
 1. Using the slash command `/Kanban Board (Empty)`, the plugin will automatically create an empty kanban board and its data for you.
 1. Using the slash command `/Kanban Board (Marker Query)`, the plugin will automatically create a Kanban board based on an advanced query that returns tasks. The first parameter is the name of the Kanban board, and the remaining parameters are the task status that you want to display as lists.
+
+## NOTE
+
+It is recommended to hide the `duration` property, which will make it look neater. Set it in the `config.edn`, like this:
+
+```
+ ;; hide specific properties for blocks
+ ;; E.g. #{:created-at :updated-at}
+ :block-hidden-properties #{:duration}
+```

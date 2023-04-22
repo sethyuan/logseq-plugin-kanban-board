@@ -51,3 +51,13 @@ https://user-images.githubusercontent.com/3410293/227445820-d357f604-fc9a-4771-a
 1. 在根块上（以上示例中为 "board"）点击小圆点打开上下文菜单，选择 `创建看板`，在打开的输入框中输入属性名，块引用已自动填充好。
 1. 通过斜线命令 `/Kanban Board (Empty)`，插件会自动帮你创建一个空白看板以及其对应的数据。
 1. 通过斜线命令 `/Kanban Board (Marker Query)`，插件会自动帮你创建一个基于返回任务的高级查询的看板。第一个参数为看板名称，其余参数为想要作为列表显示的任务状态。
+
+## NOTE
+
+推荐设置 Logseq 隐藏`duration`属性，这样看起来会更整洁些。在`config.edn`中设置，参考：
+
+```
+ ;; hide specific properties for blocks
+ ;; E.g. #{:created-at :updated-at}
+ :block-hidden-properties #{:duration}
+```
