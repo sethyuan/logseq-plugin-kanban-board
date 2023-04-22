@@ -29,7 +29,7 @@ https://user-images.githubusercontent.com/3410293/233775665-38a348f7-83fa-47a3-8
 - Tracking of card's duration in each list.
 - You can filter the board's data.
 - Archiving of cards and lists, both manually or automatically.
-- Support displaying advanced queries of tasks as kanban, this kanban does not have full functionality like a normal kanban.
+- Support displaying advanced queries of tasks as kanban, this kanban does not have full functionality like a normal kanban. Logseq plugins don't support arguments passing to queries, please be advised.
 
 ## List data structure
 
