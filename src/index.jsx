@@ -7,6 +7,7 @@ import { render } from "preact"
 import { debounce, partition, shuffle } from "rambdax"
 import KanbanBoard from "./comps/KanbanBoard"
 import KanbanDialog from "./comps/KanbanDialog"
+import MarkerQueryBoard from "./comps/MarkerQueryBoard"
 import { parseContent, persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
@@ -86,24 +87,16 @@ async function main() {
     async () => {
       const lists =
         preferredWorkflow === "now" ? "LATER, NOW, DONE" : "TODO, DOING, DONE"
-      const queryStatuses =
-        preferredWorkflow === "now"
-          ? `"LATER" "NOW" "DONE"`
-          : `"TODO" "DOING" "DONE"`
       const currentBlock = await logseq.Editor.getCurrentBlock()
       await logseq.Editor.insertAtEditingCursor(
-        `{{renderer :kboard-marker-query, ${lists}}}`,
+        `{{renderer :kboard-marker-query, Kanban, ${lists}}}`,
       )
       await logseq.Editor.insertBlock(
         currentBlock.uuid,
         "#+BEGIN_QUERY\n" +
           "{:query [:find (pull ?b [*])\n" +
-          "        :in $ ?query-page\n" +
           "        :where\n" +
-          "        [?p :block/name ?query-page]\n" +
-          "        [?b :block/page ?p]\n" +
-          `        (task ?b #{${queryStatuses}})]\n` +
-          ":inputs [:query-page]}\n" +
+          `        ]}\n` +
           "#+END_QUERY",
       )
     },
@@ -719,7 +712,10 @@ async function markerQueryRenderer({
   const type = args[0].trim()
   if (type !== ":kboard-marker-query") return
 
-  const lists = args.slice(1).map((arg) => arg.trim())
+  const name = args[1]?.trim()
+  if (!name) return
+
+  const lists = args.slice(2).map((arg) => arg.trim())
   if (lists.length < 1) return
 
   const slotEl = parent.document.getElementById(slot)
@@ -741,7 +737,7 @@ async function markerQueryRenderer({
   })
 
   setTimeout(async () => {
-    renderMarkerQueryKanban(key, uuid, lists)
+    renderMarkerQueryKanban(key, uuid, name, lists)
   }, 0)
 }
 
@@ -803,10 +799,7 @@ async function renderKanban(id, boardUUID, property, coverProp) {
   const data = await getBoardData(boardUUID, property, coverProp)
   if (await maintainPlaceholders(data.lists, property)) return
   if (await maintainTagColors(boardUUID, data.tags, data.configs)) return
-  render(
-    <KanbanBoard board={data} property={property} coverProp={coverProp} />,
-    el,
-  )
+  render(<KanbanBoard board={data} property={property} />, el)
 }
 
 async function getBoardData(boardUUID, property, coverProp) {
@@ -992,11 +985,69 @@ function* infinitePalette(palette) {
   }
 }
 
-async function renderMarkerQueryKanban(id, uuid, lists) {
+async function renderMarkerQueryKanban(id, uuid, name, lists) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  render(<MarkerQueryBoard uuid={uuid} lists={lists} />, el)
+  const data = await getQueryBoardData(uuid, name, lists)
+  await maintainTagColors(uuid, data.tags, data.configs)
+  render(
+    <MarkerQueryBoard
+      board={data}
+      onRefresh={() => renderMarkerQueryKanban(id, uuid, name, lists)}
+    />,
+    el,
+  )
+}
+
+async function getQueryBoardData(uuid, name, statuses) {
+  const boardBlock = await logseq.Editor.getBlock(uuid, {
+    includeChildren: true,
+  })
+  const queryBlock = boardBlock.children[0]
+  if (queryBlock == null) return null
+
+  const qs = queryBlock.content.match(/\[:find[\s\S]+]/m)?.[0]
+  if (!qs) return null
+
+  const allTags = new Set()
+  const lists = {}
+
+  try {
+    const data = (await logseq.DB.customQuery(qs))
+      .flat()
+      .filter((block) => statuses.includes(block.marker))
+
+    for (const status of statuses) {
+      lists[status] = []
+    }
+
+    for (const task of data) {
+      lists[task.marker].push(task)
+
+      const [content, tags, props, cover, scheduled, deadline] =
+        await parseContent(task.content)
+      task.data = {
+        content,
+        tags,
+        props,
+        cover,
+        scheduled,
+        deadline,
+      }
+      for (const tag of tags) {
+        allTags.add(tag)
+      }
+    }
+
+    const configs = JSON.parse(
+      boardBlock.properties?.configs ?? '{"tagColors": {}}',
+    )
+
+    return { name, uuid, lists, tags: allTags, configs }
+  } catch (err) {
+    return { name, uuid, lists, tags: allTags, configs: { tagColors: {} } }
+  }
 }
 
 logseq.ready(main).catch(console.error)

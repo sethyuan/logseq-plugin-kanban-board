@@ -7,13 +7,7 @@ import DropDown from "./DropDown"
 import KanbanAddCard from "./KanbanAddCard"
 import KanbanCard from "./KanbanCard"
 
-export default function KanbanList({
-  name,
-  blocks,
-  property,
-  coverProp,
-  index,
-}) {
+export default function KanbanList({ name, blocks, property, index }) {
   const { renameList, deleteList, archiveList } = useContext(BoardContext)
   const nameView = useListName(name, renameList)
 
@@ -75,7 +69,6 @@ export default function KanbanList({
                     key={block.id}
                     block={block}
                     property={property}
-                    coverProp={coverProp}
                     index={i}
                   />
                 ))}

@@ -1,9 +1,9 @@
 import { formatDistance } from "date-fns"
 import { t } from "logseq-l10n"
-import { useContext, useEffect, useState } from "preact/hooks"
+import { useContext, useEffect, useRef, useState } from "preact/hooks"
 import { Draggable } from "../../deps/react-beautiful-dnd"
 import { BoardContext } from "../libs/contexts"
-import { persistBlockUUID } from "../libs/utils"
+import { parseContent, persistBlockUUID } from "../libs/utils"
 import Menu from "./Menu"
 import Popup from "./Popup"
 
@@ -15,21 +15,56 @@ const HIDDEN_PROP_NAMES = new Set([
   "archived",
 ])
 
-export default function KanbanCard({
-  block,
-  property,
-  coverProp = "cover",
-  index,
-}) {
+export default function KanbanCard({ block: data, property, listName, index }) {
+  const [block, setBlock] = useState(data)
+  const rootRef = useRef()
   const [menuData, setMenuData] = useState({ visible: false })
-  const { listNames, writeDuration, tagColors, deleteCard, archiveCard } =
-    useContext(BoardContext)
+  const {
+    listNames,
+    writeDuration,
+    tagColors,
+    deleteCard,
+    archiveCard,
+    onRefresh,
+  } = useContext(BoardContext)
+
+  useEffect(() => {
+    setBlock(data)
+  }, [data])
+
+  useEffect(() => {
+    // Listen only for query boards.
+    if (block == null || listName == null) return
+    const off = logseq.DB.onBlockChanged(block.uuid, async () => {
+      if (rootRef.current == null || !rootRef.current.isConnected) {
+        off()
+        return
+      }
+      const updated = await logseq.Editor.getBlock(block.uuid)
+      if (updated.marker !== block.marker) {
+        onRefresh()
+      } else {
+        const [content, tags, props, cover, scheduled, deadline] =
+          await parseContent(updated.content)
+        updated.data = {
+          content,
+          tags,
+          props,
+          cover,
+          scheduled,
+          deadline,
+        }
+        setBlock(updated)
+      }
+    })
+    return off
+  }, [block])
 
   useEffect(() => {
     if (block == null) return
     ;(async () => {
-      if (noDuration(block, block.properties[property])) {
-        await writeDuration(block, block.properties[property])
+      if (noDuration(block, listName ?? block.properties[property])) {
+        await writeDuration(block, listName ?? block.properties[property])
       }
     })()
   }, [block])
@@ -163,7 +198,10 @@ export default function KanbanCard({
       {(provided, snapshot) => (
         <div
           class="kef-kb-card"
-          ref={provided.innerRef}
+          ref={(el) => {
+            provided.innerRef(el)
+            rootRef.current = el
+          }}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={openBlock}
@@ -234,9 +272,11 @@ export default function KanbanCard({
               <button class="kef-kb-menu-item" onClick={onDeleteCard}>
                 {t("Delete card")}
               </button>
-              <button class="kef-kb-menu-item" onClick={onArchiveCard}>
-                {t("Archive card")}
-              </button>
+              {property && (
+                <button class="kef-kb-menu-item" onClick={onArchiveCard}>
+                  {t("Archive card")}
+                </button>
+              )}
             </Menu>
           )}
         </div>

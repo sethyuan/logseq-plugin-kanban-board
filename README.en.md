@@ -27,6 +27,7 @@ https://user-images.githubusercontent.com/3410293/227445820-d357f604-fc9a-4771-a
 - Tracking of card's duration in each list.
 - You can filter the board's data.
 - Archiving of cards and lists, both manually or automatically.
+- Support displaying advanced queries of tasks as kanban. This kanban does not have full functionality like a normal kanban.
 
 ## List data structure
 
