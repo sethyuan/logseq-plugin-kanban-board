@@ -848,7 +848,7 @@ async function getChildren(uuid, property, coverProp, configs) {
   }
 
   const filtered = dbResult.filter(
-    (block) => block.properties[property] && !block.properties.archived,
+    (block) => block.properties && block.properties[property] && !block.properties.archived,
   )
   for (const block of filtered) {
     if (Array.isArray(block.properties[property])) {
