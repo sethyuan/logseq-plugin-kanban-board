@@ -8,7 +8,7 @@ import { BoardContext } from "../libs/contexts"
 import DropDown from "./DropDown"
 import MarkerQueryList from "./MarkerQueryList"
 
-export default function MarkerQueryBoard({ board, onRefresh }) {
+export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
 
@@ -127,7 +127,12 @@ export default function MarkerQueryBoard({ board, onRefresh }) {
           </div>
           <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>
             {Object.entries(view.lists).map(([name, blocks]) => (
-              <MarkerQueryList key={name} name={name} blocks={blocks} />
+              <MarkerQueryList
+                key={name}
+                name={name}
+                blocks={blocks}
+                width={columnWidth}
+              />
             ))}
           </div>
         </div>

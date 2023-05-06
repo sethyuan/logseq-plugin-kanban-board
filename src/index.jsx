@@ -671,6 +671,8 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
 
   const coverProp = args[3]?.trim()
 
+  const columnWidth = args[4]?.trim()
+
   const slotEl = parent.document.getElementById(slot)
   if (!slotEl) return
   const renderered = slotEl?.childElementCount > 0
@@ -700,7 +702,7 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
     )
     offHooks[key] = offHook
 
-    renderKanban(key, blockRef, property, coverProp)
+    renderKanban(key, blockRef, property, coverProp, columnWidth)
   }, 0)
 }
 
@@ -717,6 +719,8 @@ async function markerQueryRenderer({
 
   const lists = args.slice(2).map((arg) => arg.trim())
   if (lists.length < 1) return
+
+  const columnWidth = args[3]?.trim()
 
   const slotEl = parent.document.getElementById(slot)
   if (!slotEl) return
@@ -737,7 +741,7 @@ async function markerQueryRenderer({
   })
 
   setTimeout(async () => {
-    renderMarkerQueryKanban(key, uuid, name, lists)
+    renderMarkerQueryKanban(key, uuid, name, lists, columnWidth)
   }, 0)
 }
 
@@ -792,14 +796,17 @@ function watchBlockChildrenChange(id, elID, callback) {
   })
 }
 
-async function renderKanban(id, boardUUID, property, coverProp) {
+async function renderKanban(id, boardUUID, property, coverProp, columnWidth) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
   const data = await getBoardData(boardUUID, property, coverProp)
   if (await maintainPlaceholders(data.lists, property)) return
   if (await maintainTagColors(boardUUID, data.tags, data.configs)) return
-  render(<KanbanBoard board={data} property={property} />, el)
+  render(
+    <KanbanBoard board={data} property={property} columnWidth={columnWidth} />,
+    el,
+  )
 }
 
 async function getBoardData(boardUUID, property, coverProp) {
@@ -848,7 +855,10 @@ async function getChildren(uuid, property, coverProp, configs) {
   }
 
   const filtered = dbResult.filter(
-    (block) => block.properties && block.properties[property] && !block.properties.archived,
+    (block) =>
+      block.properties &&
+      block.properties[property] &&
+      !block.properties.archived,
   )
   for (const block of filtered) {
     if (Array.isArray(block.properties[property])) {
@@ -985,7 +995,7 @@ function* infinitePalette(palette) {
   }
 }
 
-async function renderMarkerQueryKanban(id, uuid, name, lists) {
+async function renderMarkerQueryKanban(id, uuid, name, lists, columnWidth) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
@@ -994,6 +1004,7 @@ async function renderMarkerQueryKanban(id, uuid, name, lists) {
   render(
     <MarkerQueryBoard
       board={data}
+      columnWidth={columnWidth}
       onRefresh={() => renderMarkerQueryKanban(id, uuid, name, lists)}
     />,
     el,

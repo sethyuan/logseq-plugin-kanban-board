@@ -15,7 +15,7 @@ import DropDown from "./DropDown"
 import KanbanAddList from "./KanbanAddList"
 import KanbanList from "./KanbanList"
 
-export default function KanbanBoard({ board, property }) {
+export default function KanbanBoard({ board, property, columnWidth }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
   const nameView = useBoardName(board.name, board.uuid)
@@ -368,6 +368,7 @@ export default function KanbanBoard({ board, property }) {
                     blocks={blocks}
                     property={property}
                     index={i}
+                    width={columnWidth}
                   />
                 ))}
                 {provided.placeholder}

@@ -1,7 +1,7 @@
 import { Droppable } from "../../deps/react-beautiful-dnd"
 import KanbanCard from "./KanbanCard"
 
-export default function MarkerQueryList({ name, blocks }) {
+export default function MarkerQueryList({ name, blocks, width }) {
   function stopPropagation(e) {
     e.stopPropagation()
   }
@@ -21,6 +21,7 @@ export default function MarkerQueryList({ name, blocks }) {
             class="kef-kb-list-cards"
             ref={provided.innerRef}
             {...provided.droppableProps}
+            style={width && { width }}
           >
             {blocks?.map((block, i) => (
               <KanbanCard

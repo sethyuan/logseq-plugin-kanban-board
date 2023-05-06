@@ -7,7 +7,7 @@ import DropDown from "./DropDown"
 import KanbanAddCard from "./KanbanAddCard"
 import KanbanCard from "./KanbanCard"
 
-export default function KanbanList({ name, blocks, property, index }) {
+export default function KanbanList({ name, blocks, property, index, width }) {
   const { renameList, deleteList, archiveList } = useContext(BoardContext)
   const nameView = useListName(name, renameList)
 
@@ -43,6 +43,7 @@ export default function KanbanList({ name, blocks, property, index }) {
           class="kef-kb-list"
           ref={provided.innerRef}
           {...provided.draggableProps}
+          style={width && { width }}
         >
           <div class="kef-kb-list-title" {...provided.dragHandleProps}>
             <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
