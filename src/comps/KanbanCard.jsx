@@ -212,9 +212,11 @@ export default function KanbanCard({ block: data, property, listName, index }) {
           )}
           <div class="kef-kb-card-content">
             <span>{block.data.content}</span>
-            <Popup popup={renderDuration}>
-              <span class="kef-kb-card-duration">&#xf319;</span>
-            </Popup>
+            {block.properties.duration != null && (
+              <Popup popup={renderDuration}>
+                <span class="kef-kb-card-duration">&#xf319;</span>
+              </Popup>
+            )}
           </div>
           <div class="kef-kb-card-tags">
             {Array.from(block.data.tags).map((tag) => (

@@ -2,7 +2,7 @@ import { t } from "logseq-l10n"
 import { useEffect } from "preact/hooks"
 import { useForm } from "react-hook-form"
 
-export default function KanbanDialog({ visible, uuid, onConfirm, onClose }) {
+export default function QueryDialog({ visible, onConfirm, onClose }) {
   const {
     register,
     handleSubmit,
@@ -12,21 +12,17 @@ export default function KanbanDialog({ visible, uuid, onConfirm, onClose }) {
 
   useEffect(() => {
     reset({
-      blockRef: uuid ?? "",
+      name: "",
       property: "",
     })
 
     if (visible) {
-      if (!!uuid) {
-        parent.document.getElementById("kef-kb-dialog-propinput").focus()
-      } else {
-        parent.document.getElementById("kef-kb-dialog-refinput").focus()
-      }
+      parent.document.getElementById("kef-kb-qdialog-refinput").focus()
     }
-  }, [visible, uuid])
+  }, [visible])
 
   function confirm(data) {
-    onConfirm(data.blockRef, data.property)
+    onConfirm(data.name, data.property)
   }
 
   function onKeyDown(e) {
@@ -50,16 +46,15 @@ export default function KanbanDialog({ visible, uuid, onConfirm, onClose }) {
       onSubmit={handleSubmit(confirm)}
     >
       <input
-        id="kef-kb-dialog-refinput"
+        id="kef-kb-qdialog-refinput"
         class="kef-kb-dialog-input"
         type="text"
-        placeholder={t("Block reference")}
-        readOnly={!!uuid}
-        {...register("blockRef", { required: true })}
+        placeholder={t("Board name")}
+        {...register("name", { required: true })}
       />
-      {errors.blockRef && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
+      {errors.name && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
       <input
-        id="kef-kb-dialog-propinput"
+        id="kef-kb-qdialog-propinput"
         class="kef-kb-dialog-input"
         type="text"
         placeholder={t("Property used to create lists")}

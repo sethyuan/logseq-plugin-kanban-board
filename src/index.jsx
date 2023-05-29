@@ -6,9 +6,11 @@ import { setup, t } from "logseq-l10n"
 import { render } from "preact"
 import { debounce, partition, shuffle } from "rambdax"
 import KanbanBoard from "./comps/KanbanBoard"
-import KanbanDialog from "./comps/KanbanDialog"
 import MarkerQueryBoard from "./comps/MarkerQueryBoard"
-import { parseContent, persistBlockUUID } from "./libs/utils"
+import QueryBoard from "./comps/QueryBoard"
+import QueryDialog from "./comps/QueryDialog"
+import RefDialog from "./comps/RefDialog"
+import { groupBy, parseContent, persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
@@ -61,9 +63,10 @@ async function main() {
 
   logseq.App.onMacroRendererSlotted(kanbanRenderer)
   logseq.App.onMacroRendererSlotted(markerQueryRenderer)
+  logseq.App.onMacroRendererSlotted(queryRenderer)
 
-  logseq.Editor.registerSlashCommand("Kanban Board", async () => {
-    openDialog(async (blockRef, property) => {
+  logseq.Editor.registerSlashCommand("Kanban Board", () => {
+    openRefDialog(async (blockRef, property) => {
       await logseq.Editor.insertAtEditingCursor(
         `{{renderer :kboard, ${blockRef}, ${property}}}`,
       )
@@ -82,30 +85,36 @@ async function main() {
     })
   })
 
-  logseq.Editor.registerSlashCommand(
-    "Kanban Board (Marker Query)",
-    async () => {
-      const lists =
-        preferredWorkflow === "now" ? "LATER, NOW, DONE" : "TODO, DOING, DONE"
-      const currentBlock = await logseq.Editor.getCurrentBlock()
+  logseq.Editor.registerSlashCommand("Kanban Board (Query)", () => {
+    openQueryDialog(async (name, property) => {
       await logseq.Editor.insertAtEditingCursor(
-        `{{renderer :kboard-marker-query, Kanban, ${lists}}}`,
+        `{{renderer :kboard-query, ${name}, ${property}}}`,
       )
+      const currentBlock = await logseq.Editor.getCurrentBlock()
       await logseq.Editor.insertBlock(
         currentBlock.uuid,
-        "#+BEGIN_QUERY\n" +
-          "{:query [:find (pull ?b [*])\n" +
-          "        :where\n" +
-          `        ]}\n` +
-          "#+END_QUERY",
+        `{{query (property :${property})}}`,
       )
-    },
-  )
+    })
+  })
+
+  logseq.Editor.registerSlashCommand("Kanban Board (Task Query)", async () => {
+    const lists =
+      preferredWorkflow === "now" ? "LATER, NOW, DONE" : "TODO, DOING, DONE"
+    const currentBlock = await logseq.Editor.getCurrentBlock()
+    await logseq.Editor.insertAtEditingCursor(
+      `{{renderer :kboard-marker-query, Kanban, ${lists}}}`,
+    )
+    await logseq.Editor.insertBlock(
+      currentBlock.uuid,
+      "{{query (task LATER TODO)}}",
+    )
+  })
 
   logseq.Editor.registerBlockContextMenuItem(
     t("Kanban Board"),
     async ({ uuid }) => {
-      openDialog(uuid, async (blockRef, property) => {
+      openRefDialog(uuid, async (blockRef, property) => {
         await persistBlockUUID(uuid)
         await logseq.Editor.insertBlock(
           uuid,
@@ -720,6 +729,40 @@ async function markerQueryRenderer({
   const lists = args.slice(2).map((arg) => arg.trim())
   if (lists.length < 1) return
 
+  const slotEl = parent.document.getElementById(slot)
+  if (!slotEl) return
+  const renderered = slotEl?.childElementCount > 0
+  if (renderered) return
+
+  slotEl.style.width = "100%"
+
+  const key = `kef-kb-${slot}`
+  logseq.provideUI({
+    key,
+    slot,
+    template: `<div id="${key}" style="width: 100%"></div>`,
+    style: {
+      cursor: "default",
+      width: "100%",
+    },
+  })
+
+  setTimeout(async () => {
+    renderMarkerQueryKanban(key, uuid, name, lists)
+  }, 0)
+}
+
+async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
+  if (args.length === 0) return
+  const type = args[0].trim()
+  if (type !== ":kboard-query") return
+
+  const name = args[1]?.trim()
+  if (!name) return
+
+  const list = args[2]?.trim()
+  if (!list) return
+
   const columnWidth = args[3]?.trim()
 
   const slotEl = parent.document.getElementById(slot)
@@ -741,11 +784,11 @@ async function markerQueryRenderer({
   })
 
   setTimeout(async () => {
-    renderMarkerQueryKanban(key, uuid, name, lists, columnWidth)
+    renderQueryKanban(key, uuid, name, list, columnWidth)
   }, 0)
 }
 
-function openDialog(...args) {
+function openRefDialog(...args) {
   const [uuid, callback] =
     typeof args[0] === "function" ? [undefined, args[0]] : [args[0], args[1]]
 
@@ -755,12 +798,33 @@ function openDialog(...args) {
   if (editor == null) return
 
   render(
-    <KanbanDialog
+    <RefDialog
       visible={{}}
       uuid={uuid}
       onConfirm={(blockRef, property) => {
         closeDialog()
         callback(blockRef, property)
+      }}
+      onClose={() => {
+        closeDialog()
+      }}
+    />,
+    dialogContainer,
+  )
+  editor.appendChild(dialogContainer)
+  dialogContainer.style.display = "block"
+}
+
+function openQueryDialog(callback) {
+  const editor = parent.document.activeElement?.closest(".block-editor")
+  if (editor == null) return
+
+  render(
+    <QueryDialog
+      visible={{}}
+      onConfirm={(name, property) => {
+        closeDialog()
+        callback(name, property)
       }}
       onClose={() => {
         closeDialog()
@@ -924,19 +988,6 @@ async function getChildren(uuid, property, coverProp, configs) {
   return [blocks, allTags]
 }
 
-function groupBy(arr, selector) {
-  const ret = {}
-  for (const x of arr) {
-    const key = selector(x)
-    if (!key) continue
-    if (ret[key] == null) {
-      ret[key] = []
-    }
-    ret[key].push(x)
-  }
-  return ret
-}
-
 async function maintainPlaceholders(lists, property) {
   let maintained = false
   for (const [name, list] of Object.entries(lists)) {
@@ -999,7 +1050,7 @@ async function renderMarkerQueryKanban(id, uuid, name, lists, columnWidth) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  const data = await getQueryBoardData(uuid, name, lists)
+  const data = await getMarkerQueryBoardData(uuid, name, lists)
   await maintainTagColors(uuid, data.tags, data.configs)
   render(
     <MarkerQueryBoard
@@ -1011,21 +1062,43 @@ async function renderMarkerQueryKanban(id, uuid, name, lists, columnWidth) {
   )
 }
 
-async function getQueryBoardData(uuid, name, statuses) {
+async function renderQueryKanban(id, uuid, name, list, columnWidth) {
+  const el = parent.document.getElementById(id)
+  if (el == null || !el.isConnected) return
+
+  const data = await getQueryBoardData(uuid, name, list)
+  await maintainTagColors(uuid, data.tags, data.configs)
+  render(
+    <QueryBoard
+      board={data}
+      columnWidth={columnWidth}
+      onRefresh={() => renderQueryKanban(id, uuid, name, list)}
+    />,
+    el,
+  )
+}
+
+async function getMarkerQueryBoardData(uuid, name, statuses) {
   const boardBlock = await logseq.Editor.getBlock(uuid, {
     includeChildren: true,
   })
   const queryBlock = boardBlock.children[0]
   if (queryBlock == null) return null
 
-  const qs = queryBlock.content.match(/\[:find[\s\S]+]/m)?.[0]
+  const qs =
+    queryBlock.content.match(/\[:find[\s\S]+]/m)?.[0] ??
+    queryBlock.content.match(/\{\{query (.+)\}\}/)?.[1]
   if (!qs) return null
 
   const allTags = new Set()
   const lists = {}
 
   try {
-    const data = (await logseq.DB.customQuery(qs))
+    const data = (
+      await (qs.startsWith("[:find")
+        ? logseq.DB.customQuery(qs)
+        : logseq.DB.q(qs)),
+    )
       .flat()
       .filter((block) => statuses.includes(block.marker))
 
@@ -1039,6 +1112,56 @@ async function getQueryBoardData(uuid, name, statuses) {
       const [content, tags, props, cover, scheduled, deadline] =
         await parseContent(task.content)
       task.data = {
+        content,
+        tags,
+        props,
+        cover,
+        scheduled,
+        deadline,
+      }
+      for (const tag of tags) {
+        allTags.add(tag)
+      }
+    }
+
+    const configs = JSON.parse(
+      boardBlock.properties?.configs ?? '{"tagColors": {}}',
+    )
+
+    return { name, uuid, lists, tags: allTags, configs }
+  } catch (err) {
+    return { name, uuid, lists, tags: allTags, configs: { tagColors: {} } }
+  }
+}
+
+async function getQueryBoardData(uuid, name, list) {
+  const boardBlock = await logseq.Editor.getBlock(uuid, {
+    includeChildren: true,
+  })
+  const queryBlock = boardBlock.children[0]
+  if (queryBlock == null) return null
+
+  const qs =
+    queryBlock.content.match(/\[:find[\s\S]+]/m)?.[0] ??
+    queryBlock.content.match(/\{\{query (.+)\}\}/)?.[1]
+  if (!qs) return null
+
+  try {
+    const data = (
+      await (qs.startsWith("[:find")
+        ? logseq.DB.customQuery(qs)
+        : logseq.DB.q(qs)),
+    )
+      .flat()
+      .filter((block) => block.properties?.[list])
+
+    const lists = groupBy(data, (block) => block.properties[list])
+
+    const allTags = new Set()
+    for (const block of data) {
+      const [content, tags, props, cover, scheduled, deadline] =
+        await parseContent(block.content)
+      block.data = {
         content,
         tags,
         props,

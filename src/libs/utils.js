@@ -92,3 +92,19 @@ export async function getImgSrc(src) {
     return `file://${graph.path}/${src}`
   }
 }
+
+export function groupBy(arr, selector) {
+  const ret = {}
+  for (const x of arr) {
+    const k = selector(x)
+    if (!k) continue
+    const keys = Array.isArray(k) ? k : [k]
+    for (const key of keys) {
+      if (ret[key] == null) {
+        ret[key] = []
+      }
+      ret[key].push(x)
+    }
+  }
+  return ret
+}
