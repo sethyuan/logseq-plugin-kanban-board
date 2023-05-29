@@ -43,7 +43,11 @@ export default function KanbanList({ name, blocks, property, index, width }) {
           class="kef-kb-list"
           ref={provided.innerRef}
           {...provided.draggableProps}
-          style={width && { width }}
+          style={
+            width
+              ? { ...provided.draggableProps.style, width }
+              : provided.draggableProps.style
+          }
         >
           <div class="kef-kb-list-title" {...provided.dragHandleProps}>
             <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
