@@ -1096,9 +1096,9 @@ async function getMarkerQueryBoardData(uuid, name, statuses) {
 
   try {
     const data = (
-      await (qs.startsWith("[:find")
-        ? logseq.DB.customQuery(qs)
-        : logseq.DB.q(qs)),
+      (qs.startsWith("[:find")
+        ? await logseq.DB.customQuery(qs)
+        : await logseq.DB.q(qs)) ?? []
     )
       .flat()
       .filter((block) => statuses.includes(block.marker))
@@ -1149,12 +1149,12 @@ async function getQueryBoardData(uuid, name, list) {
 
   try {
     const data = (
-      await (qs.startsWith("[:find")
-        ? logseq.DB.customQuery(qs)
-        : logseq.DB.q(qs)),
+      (qs.startsWith("[:find")
+        ? await logseq.DB.customQuery(qs)
+        : await logseq.DB.q(qs)) ?? []
     )
       .flat()
-      .filter((block) => block.properties?.[list])
+      .filter((block) => !block.name && block.properties?.[list])
 
     const lists = groupBy(data, (block) => block.properties[list])
 
@@ -1163,7 +1163,11 @@ async function getQueryBoardData(uuid, name, list) {
       const [content, tags, props, cover, scheduled, deadline] =
         await parseContent(block.content)
       block.data = {
-        content,
+        content:
+          block["preBlock?"] ?? block["pre-block?"]
+            ? block.page.originalName ??
+              (await logseq.Editor.getPage(block.page.id)).originalName
+            : content,
         tags,
         props,
         cover,
@@ -1181,7 +1185,14 @@ async function getQueryBoardData(uuid, name, list) {
 
     return { name, uuid, lists, tags: allTags, configs }
   } catch (err) {
-    return { name, uuid, lists, tags: allTags, configs: { tagColors: {} } }
+    console.error(err)
+    return {
+      name,
+      uuid,
+      lists: {},
+      tags: new Set(),
+      configs: { tagColors: {} },
+    }
   }
 }
 
