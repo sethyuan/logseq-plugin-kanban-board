@@ -1071,6 +1071,7 @@ async function renderQueryKanban(id, uuid, name, list, columnWidth) {
   render(
     <QueryBoard
       board={data}
+      list={list}
       columnWidth={columnWidth}
       onRefresh={() => renderQueryKanban(id, uuid, name, list)}
     />,

@@ -8,7 +8,7 @@ import { BoardContext } from "../libs/contexts"
 import DropDown from "./DropDown"
 import MarkerQueryList from "./MarkerQueryList"
 
-export default function QueryBoard({ board, columnWidth, onRefresh }) {
+export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
 
@@ -24,9 +24,7 @@ export default function QueryBoard({ board, columnWidth, onRefresh }) {
   }
 
   async function moveCard(e) {
-    // TODO
     const { source: src, destination: dest } = e
-    const card = view.lists[src.droppableId][src.index]
 
     setView(
       produce(view, (draft) => {
@@ -36,11 +34,40 @@ export default function QueryBoard({ board, columnWidth, onRefresh }) {
     )
 
     const block = view.lists[src.droppableId][src.index]
-
-    await logseq.Editor.updateBlock(
-      block.uuid,
-      `${dest.droppableId}${block.content.substring(src.droppableId.length)}`,
-    )
+    const listValue = block.properties[list].slice()
+    if (Array.isArray(listValue)) {
+      let indexToRemove = -1
+      let hasDestList = false
+      for (let i = 0; i < listValue.length; i++) {
+        const value = `[[${listValue[i]}]]`
+        if (value === src.droppableId) {
+          indexToRemove = i
+        } else if (value === dest.droppableId) {
+          hasDestList = true
+        }
+        listValue[i] = value
+      }
+      if (indexToRemove > -1) {
+        listValue.splice(indexToRemove, 1)
+      }
+      if (!hasDestList) {
+        listValue.push(dest.droppableId)
+      }
+      const lines = block.content.split("\n")
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith(`${list}:: `)) {
+          lines[i] = `${list}:: ${listValue.join(",")}`
+        }
+      }
+      await logseq.Editor.updateBlock(block.uuid, lines.join("\n"))
+    } else {
+      await logseq.Editor.upsertBlockProperty(
+        block.uuid,
+        list,
+        dest.droppableId,
+      )
+    }
+    onRefresh()
   }
 
   const writeDuration = useCallback(async (block, listName) => {}, [])
@@ -93,14 +120,16 @@ export default function QueryBoard({ board, columnWidth, onRefresh }) {
             </button>
           </div>
           <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>
-            {Object.entries(view.lists).map(([name, blocks]) => (
-              <MarkerQueryList
-                key={name}
-                name={name}
-                blocks={blocks}
-                width={columnWidth}
-              />
-            ))}
+            {Object.keys(view.lists)
+              .sort()
+              .map((name) => (
+                <MarkerQueryList
+                  key={name}
+                  name={name}
+                  blocks={view.lists[name]}
+                  width={columnWidth}
+                />
+              ))}
           </div>
         </div>
       </BoardContext.Provider>

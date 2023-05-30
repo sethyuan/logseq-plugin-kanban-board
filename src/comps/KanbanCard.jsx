@@ -194,7 +194,7 @@ export default function KanbanCard({ block: data, property, listName, index }) {
   }
 
   return (
-    <Draggable draggableId={`${block.id}`} index={index}>
+    <Draggable draggableId={`${block.id}-${listName}`} index={index}>
       {(provided, snapshot) => (
         <div
           class="kef-kb-card"
