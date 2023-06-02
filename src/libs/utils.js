@@ -78,7 +78,7 @@ export async function persistBlockUUID(uuid) {
 
 export async function getImgSrc(src) {
   const m = src.match(
-    /^!?(?:\[[^\]]+\])?(?:\((?:\.\.\/)?(.+)\)|(?:(?:\.\.\/)?(.+)))/,
+    /^!?(?:\[[^\]]*\])?(?:\((?:\.\.\/)?(.+)\)|(?:(?:\.\.\/)?(.+)))/,
   )
   if (m) {
     src = m[1] ?? m[2]
