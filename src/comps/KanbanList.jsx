@@ -74,6 +74,7 @@ export default function KanbanList({ name, blocks, property, index, width }) {
                     key={block.id}
                     block={block}
                     property={property}
+                    listName={name}
                     index={i}
                   />
                 ))}
