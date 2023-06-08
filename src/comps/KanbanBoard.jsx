@@ -33,7 +33,7 @@ export default function KanbanBoard({ board, property, columnWidth }) {
     if (to?.startsWith("[[")) {
       to = `{${to.substring(1)}`
     }
-    const current = block.properties.duration
+    const current = block.properties?.duration
       ? JSON.parse(block.properties.duration)
       : {}
     const now = Date.now()
@@ -189,7 +189,9 @@ export default function KanbanBoard({ board, property, columnWidth }) {
       for (const list of Object.values(board.lists)) {
         await Promise.all(
           list.map(async (block) => {
-            const durationData = JSON.parse(block.properties.duration)
+            const durationData = block.properties?.duration
+              ? JSON.parse(block.properties.duration)
+              : {}
             if (durationData[oldName] != null) {
               durationData[newName] = durationData[oldName]
               delete durationData[oldName]
@@ -261,7 +263,7 @@ export default function KanbanBoard({ board, property, columnWidth }) {
 
   const restoreCard = useCallback(async (uuid) => {
     const card = await logseq.Editor.getBlock(uuid)
-    const duration = card.properties.duration
+    const duration = card.properties?.duration
       ? JSON.parse(card.properties.duration)
       : {}
     delete duration[

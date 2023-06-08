@@ -935,9 +935,9 @@ async function getChildren(uuid, property, coverProp, configs) {
   const [blocksToArchive, blocks] =
     configs.autoArchiving != null
       ? partition((block) => {
-          if (block.properties[property] !== configs.autoArchiving.list)
+          if (block.properties?.[property] !== configs.autoArchiving.list)
             return false
-          if (!block.properties.duration) return false
+          if (!block.properties?.duration) return false
           if (block.content.includes("#.kboard-placeholder")) return false
           const duration = JSON.parse(block.properties.duration)
           const isPage = configs.autoArchiving.list.startsWith("[[")

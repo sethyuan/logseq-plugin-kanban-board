@@ -19,7 +19,7 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
     if (to?.startsWith("[[")) {
       to = `{${to.substring(1)}`
     }
-    const current = block.properties.duration
+    const current = block.properties?.duration
       ? JSON.parse(block.properties.duration)
       : {}
     const now = Date.now()

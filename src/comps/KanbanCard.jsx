@@ -139,7 +139,7 @@ export default function KanbanCard({ block: data, property, listName, index }) {
   }
 
   function renderDuration() {
-    if (block.properties.duration == null) return null
+    if (block.properties?.duration == null) return null
     try {
       const durationData = JSON.parse(block.properties.duration)
       return (
@@ -212,7 +212,7 @@ export default function KanbanCard({ block: data, property, listName, index }) {
           )}
           <div class="kef-kb-card-content">
             <span>{block.data.content}</span>
-            {block.properties.duration != null && (
+            {block.properties?.duration != null && (
               <Popup popup={renderDuration}>
                 <span class="kef-kb-card-duration">&#xf319;</span>
               </Popup>
@@ -288,7 +288,7 @@ export default function KanbanCard({ block: data, property, listName, index }) {
 }
 
 function noDuration(block, listName) {
-  if (!block.properties.duration) return true
+  if (!block.properties?.duration) return true
   const duration = JSON.parse(block.properties.duration)
   if (listName.startsWith("[[")) {
     listName = `{${listName.substring(1)}`
