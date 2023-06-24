@@ -13,6 +13,7 @@ const HIDDEN_PROP_NAMES = new Set([
   "collapsed",
   "duration",
   "archived",
+  "scroll-top",
 ])
 
 export default function KanbanCard({ block: data, property, listName, index }) {
