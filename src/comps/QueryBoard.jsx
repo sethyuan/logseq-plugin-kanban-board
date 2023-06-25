@@ -1,12 +1,16 @@
 import produce from "immer"
 import { useCallback, useMemo } from "preact/hooks"
 import { cls } from "reactutils"
-import { DragDropContext, useMouseSensor } from "../../deps/react-beautiful-dnd"
+import {
+  DragDropContext,
+  Droppable,
+  useMouseSensor,
+} from "../../deps/react-beautiful-dnd"
 import useDragMove from "../hooks/useDragMove"
 import useFilter from "../hooks/useFilter"
 import { BoardContext } from "../libs/contexts"
 import DropDown from "./DropDown"
-import MarkerQueryList from "./MarkerQueryList"
+import QueryList from "./QueryList"
 
 export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
@@ -14,11 +18,20 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
 
   function onDragEnd(e) {
     if (!e.destination) return
-    if (e.source.droppableId === e.destination.droppableId) return
+    if (e.source.droppableId === e.destination.droppableId && e.type === "CARD")
+      return
+    if (
+      e.source.droppableId === e.destination.droppableId &&
+      e.source.index === e.destination.index
+    )
+      return
 
     switch (e.type) {
       case "CARD":
         moveCard(e)
+        break
+      case "LIST":
+        moveList(e)
         break
     }
   }
@@ -70,6 +83,35 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
     onRefresh()
   }
 
+  async function moveList(e) {
+    const { source: src, destination: dest } = e
+    const lists = view.lists
+
+    const keys = Object.keys(lists)
+    if (src.index < dest.index) {
+      keys.splice(dest.index + 1, 0, keys[src.index])
+      keys.splice(src.index, 1)
+    } else {
+      const key = keys.splice(src.index, 1)
+      keys.splice(dest.index, 0, ...key)
+    }
+    setView({
+      lists: keys.reduce((obj, key) => {
+        obj[key] = lists[key]
+        return obj
+      }, {}),
+    })
+
+    await logseq.Editor.upsertBlockProperty(
+      board.uuid,
+      "configs",
+      JSON.stringify({
+        ...board.configs,
+        listOrders: keys,
+      }),
+    )
+  }
+
   const writeDuration = useCallback(async (block, listName) => {}, [])
 
   const deleteCard = useCallback(async (uuid) => {
@@ -100,38 +142,55 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
       sensors={[useMouseSensor]}
     >
       <BoardContext.Provider value={contextValue}>
-        <div class="kef-kb-board" onMouseDown={stopPropagation}>
-          <div class="kef-kb-board-name">
-            {board.name}
-            <DropDown popup={renderFilterPopup} popupClass="kef-kb-filter-menu">
-              <span
-                class={cls(
-                  "kef-kb-board-icon",
-                  Object.entries(view.lists).some(
-                    ([name, list]) => list.length !== board.lists[name]?.length,
-                  ) && "kef-kb-filter-on",
-                )}
-              >
-                &#xeaa5;
-              </span>
-            </DropDown>
-            <button type="button" class="kef-kb-board-icon" onClick={onRefresh}>
-              &#xeb13;
-            </button>
-          </div>
-          <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>
-            {Object.keys(view.lists)
-              .sort()
-              .map((name) => (
-                <MarkerQueryList
-                  key={name}
-                  name={name}
-                  blocks={view.lists[name]}
-                  width={columnWidth}
-                />
-              ))}
-          </div>
-        </div>
+        <Droppable droppableId="board" direction="horizontal" type="LIST">
+          {(provided, snapshot) => (
+            <div
+              class="kef-kb-board"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              onMouseDown={stopPropagation}
+            >
+              <div class="kef-kb-board-name">
+                {board.name}
+                <DropDown
+                  popup={renderFilterPopup}
+                  popupClass="kef-kb-filter-menu"
+                >
+                  <span
+                    class={cls(
+                      "kef-kb-board-icon",
+                      Object.entries(view.lists).some(
+                        ([name, list]) =>
+                          list.length !== board.lists[name]?.length,
+                      ) && "kef-kb-filter-on",
+                    )}
+                  >
+                    &#xeaa5;
+                  </span>
+                </DropDown>
+                <button
+                  type="button"
+                  class="kef-kb-board-icon"
+                  onClick={onRefresh}
+                >
+                  &#xeb13;
+                </button>
+              </div>
+              <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>
+                {Object.keys(view.lists).map((name, i) => (
+                  <QueryList
+                    key={name}
+                    name={name}
+                    blocks={view.lists[name]}
+                    width={columnWidth}
+                    index={i}
+                  />
+                ))}
+                {provided.placeholder}
+              </div>
+            </div>
+          )}
+        </Droppable>
       </BoardContext.Provider>
     </DragDropContext>
   )

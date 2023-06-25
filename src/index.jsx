@@ -10,7 +10,12 @@ import MarkerQueryBoard from "./comps/MarkerQueryBoard"
 import QueryBoard from "./comps/QueryBoard"
 import QueryDialog from "./comps/QueryDialog"
 import RefDialog from "./comps/RefDialog"
-import { groupBy, parseContent, persistBlockUUID } from "./libs/utils"
+import {
+  groupBy,
+  orderObjectByList,
+  parseContent,
+  persistBlockUUID,
+} from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
@@ -1156,7 +1161,14 @@ async function getQueryBoardData(uuid, name, list) {
       .flat()
       .filter((block) => !block.name && block.properties?.[list])
 
-    const lists = groupBy(data, (block) => block.properties[list])
+    const configs = JSON.parse(
+      boardBlock.properties?.configs ?? '{"tagColors": {}}',
+    )
+
+    const lists = orderObjectByList(
+      groupBy(data, (block) => block.properties[list]),
+      configs.listOrders,
+    )
 
     const allTags = new Set()
     for (const block of data) {
@@ -1178,10 +1190,6 @@ async function getQueryBoardData(uuid, name, list) {
         allTags.add(tag)
       }
     }
-
-    const configs = JSON.parse(
-      boardBlock.properties?.configs ?? '{"tagColors": {}}',
-    )
 
     return { name, uuid, lists, tags: allTags, configs }
   } catch (err) {
