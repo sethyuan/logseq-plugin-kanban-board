@@ -13,6 +13,11 @@ export default function QueryList({ name, blocks, width, index }) {
           class="kef-kb-list"
           ref={provided.innerRef}
           {...provided.draggableProps}
+          style={
+            width
+              ? { ...provided.draggableProps.style, width }
+              : provided.draggableProps.style
+          }
         >
           <div class="kef-kb-list-title" {...provided.dragHandleProps}>
             <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
@@ -27,7 +32,6 @@ export default function QueryList({ name, blocks, width, index }) {
                 class="kef-kb-list-cards"
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                style={width && { width }}
               >
                 {blocks?.map((block, i) => (
                   <KanbanCard
