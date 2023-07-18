@@ -133,6 +133,10 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
     e.stopPropagation()
   }
 
+  function onEdit(e) {
+    logseq.Editor.editBlock(board.uuid)
+  }
+
   if (view?.lists == null) return null
 
   return (
@@ -174,6 +178,13 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
                   onClick={onRefresh}
                 >
                   &#xeb13;
+                </button>
+                <button
+                  type="button"
+                  class="kef-kb-board-icon"
+                  onClick={onEdit}
+                >
+                  &#xeb04;
                 </button>
               </div>
               <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>

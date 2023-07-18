@@ -711,12 +711,12 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
       rootBlock.id,
       key,
       debounce((blocks, txData, txMeta) => {
-        renderKanban(key, blockRef, property, coverProp)
+        renderKanban(key, uuid, blockRef, property, coverProp)
       }, 300),
     )
     offHooks[key] = offHook
 
-    renderKanban(key, blockRef, property, coverProp, columnWidth)
+    renderKanban(key, uuid, blockRef, property, coverProp, columnWidth)
   }, 0)
 }
 
@@ -865,7 +865,14 @@ function watchBlockChildrenChange(id, elID, callback) {
   })
 }
 
-async function renderKanban(id, boardUUID, property, coverProp, columnWidth) {
+async function renderKanban(
+  id,
+  uuid,
+  boardUUID,
+  property,
+  coverProp,
+  columnWidth,
+) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
@@ -873,7 +880,12 @@ async function renderKanban(id, boardUUID, property, coverProp, columnWidth) {
   if (await maintainPlaceholders(data.lists, property)) return
   if (await maintainTagColors(boardUUID, data.tags, data.configs)) return
   render(
-    <KanbanBoard board={data} property={property} columnWidth={columnWidth} />,
+    <KanbanBoard
+      board={data}
+      property={property}
+      columnWidth={columnWidth}
+      uuid={uuid}
+    />,
     el,
   )
 }

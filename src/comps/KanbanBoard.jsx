@@ -15,7 +15,7 @@ import DropDown from "./DropDown"
 import KanbanAddList from "./KanbanAddList"
 import KanbanList from "./KanbanList"
 
-export default function KanbanBoard({ board, property, columnWidth }) {
+export default function KanbanBoard({ board, property, columnWidth, uuid }) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
   const nameView = useBoardName(board.name, board.uuid)
@@ -323,6 +323,10 @@ export default function KanbanBoard({ board, property, columnWidth }) {
     e.stopPropagation()
   }
 
+  function onEdit(e) {
+    logseq.Editor.editBlock(uuid)
+  }
+
   if (view?.lists == null) return null
 
   return (
@@ -361,6 +365,13 @@ export default function KanbanBoard({ board, property, columnWidth }) {
                 <DropDown popup={renderMenu} onPopupHidden={resetMenuMode}>
                   <span class={cls("kef-kb-board-icon")}>&#xea94;</span>
                 </DropDown>
+                <button
+                  type="button"
+                  class="kef-kb-board-icon"
+                  onClick={onEdit}
+                >
+                  &#xeb04;
+                </button>
               </div>
               <div class="kef-kb-board-lists" ref={listRef} {...moveEvents}>
                 {Object.entries(view.lists).map(([name, blocks], i) => (
