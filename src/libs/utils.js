@@ -67,12 +67,8 @@ export async function parseContent(content, coverProp = "cover") {
 }
 
 export async function persistBlockUUID(uuid) {
-  const block = await logseq.Editor.getBlock(uuid)
-  if (block.properties?.id == null) {
-    await logseq.Editor.updateBlock(
-      block.uuid,
-      `${block.content}\nid:: ${block.uuid}`,
-    )
+  if (!(await logseq.Editor.getBlockProperty(uuid, "id"))) {
+    await logseq.Editor.upsertBlockProperty(uuid, "id", uuid)
   }
 }
 

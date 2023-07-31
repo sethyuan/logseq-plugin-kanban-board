@@ -9,6 +9,7 @@ import {
 import useDragMove from "../hooks/useDragMove"
 import useFilter from "../hooks/useFilter"
 import { BoardContext } from "../libs/contexts"
+import { persistBlockUUID } from "../libs/utils"
 import DropDown from "./DropDown"
 import QueryList from "./QueryList"
 
@@ -60,6 +61,7 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
       }
       viewUpdated.lists[dest.droppableId].forEach(({ uuid }, i) => {
         draft[dest.droppableId][uuid] = i
+        persistBlockUUID(uuid)
       })
     })
 
