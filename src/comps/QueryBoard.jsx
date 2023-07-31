@@ -208,6 +208,7 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
                   <QueryList
                     key={name}
                     name={name}
+                    property={list}
                     blocks={view.lists[name]}
                     width={columnWidth}
                     index={i}
