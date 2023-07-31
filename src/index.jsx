@@ -1167,6 +1167,16 @@ async function getMarkerQueryBoardData(uuid, name, statuses) {
       boardBlock.properties?.configs ?? '{"tagColors": {}}',
     )
 
+    const order = configs.order ?? {}
+    for (const [key, list] of Object.entries(lists)) {
+      list.sort((a, b) => {
+        const listOrder = order[key] ?? {}
+        return (
+          (listOrder[a.uuid] ?? -Infinity) - (listOrder[b.uuid] ?? -Infinity)
+        )
+      })
+    }
+
     return { name, uuid, lists, tags: allTags, configs }
   } catch (err) {
     return { name, uuid, lists, tags: allTags, configs: { tagColors: {} } }
@@ -1202,11 +1212,22 @@ async function getQueryBoardData(uuid, name, list, listValues) {
       obj[listName] = []
       return obj
     }, {})
+
     for (const block of data) {
       const propValue = block.properties?.[list]
       if (lists[propValue] != null) {
         lists[propValue].push(block)
       }
+    }
+
+    const order = configs.order ?? {}
+    for (const [key, list] of Object.entries(lists)) {
+      list.sort((a, b) => {
+        const listOrder = order[key] ?? {}
+        return (
+          (listOrder[a.uuid] ?? -Infinity) - (listOrder[b.uuid] ?? -Infinity)
+        )
+      })
     }
 
     const allTags = new Set()

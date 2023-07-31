@@ -34,7 +34,11 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
 
   function onDragEnd(e) {
     if (!e.destination) return
-    if (e.source.droppableId === e.destination.droppableId) return
+    if (
+      e.source.droppableId === e.destination.droppableId &&
+      e.source.index === e.destination.index
+    )
+      return
 
     switch (e.type) {
       case "CARD":
@@ -52,13 +56,13 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
       dest.droppableId,
     )
 
-    setView(
-      produce(view, (draft) => {
-        const srcCard = draft.lists[src.droppableId].splice(src.index, 1)
-        srcCard[0].properties.duration = durationValue
-        draft.lists[dest.droppableId].splice(dest.index, 0, ...srcCard)
-      }),
-    )
+    const viewUpdated = produce(view, (draft) => {
+      const srcCard = draft.lists[src.droppableId].splice(src.index, 1)
+      srcCard[0].properties.duration = durationValue
+      draft.lists[dest.droppableId].splice(dest.index, 0, ...srcCard)
+    })
+
+    setView(viewUpdated)
 
     const block = view.lists[src.droppableId][src.index]
 
@@ -70,6 +74,27 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
       block.uuid,
       "duration",
       durationValue,
+    )
+
+    const order = produce(board.configs.order ?? {}, (draft) => {
+      if (draft[src.droppableId] == null) {
+        draft[src.droppableId] = {}
+      }
+      if (draft[dest.droppableId] == null) {
+        draft[dest.droppableId] = {}
+      }
+      if (src.droppableId !== dest.droppableId) {
+        delete draft[src.droppableId][block.uuid]
+      }
+      viewUpdated.lists[dest.droppableId].forEach(({ uuid }, i) => {
+        draft[dest.droppableId][uuid] = i
+      })
+    })
+
+    await logseq.Editor.upsertBlockProperty(
+      board.uuid,
+      "configs",
+      JSON.stringify({ ...board.configs, order }),
     )
   }
 

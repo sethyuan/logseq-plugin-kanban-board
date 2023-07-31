@@ -18,8 +18,6 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
 
   function onDragEnd(e) {
     if (!e.destination) return
-    if (e.source.droppableId === e.destination.droppableId && e.type === "CARD")
-      return
     if (
       e.source.droppableId === e.destination.droppableId &&
       e.source.index === e.destination.index
@@ -39,12 +37,12 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
   async function moveCard(e) {
     const { source: src, destination: dest } = e
 
-    setView(
-      produce(view, (draft) => {
-        const srcCard = draft.lists[src.droppableId].splice(src.index, 1)
-        draft.lists[dest.droppableId].splice(dest.index, 0, ...srcCard)
-      }),
-    )
+    const viewUpdated = produce(view, (draft) => {
+      const srcCard = draft.lists[src.droppableId].splice(src.index, 1)
+      draft.lists[dest.droppableId].splice(dest.index, 0, ...srcCard)
+    })
+
+    setView(viewUpdated)
 
     const block = view.lists[src.droppableId][src.index]
     const listValue = block.properties[list].slice()
@@ -80,6 +78,28 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
         dest.droppableId,
       )
     }
+
+    const order = produce(board.configs.order ?? {}, (draft) => {
+      if (draft[src.droppableId] == null) {
+        draft[src.droppableId] = {}
+      }
+      if (draft[dest.droppableId] == null) {
+        draft[dest.droppableId] = {}
+      }
+      if (src.droppableId !== dest.droppableId) {
+        delete draft[src.droppableId][block.uuid]
+      }
+      viewUpdated.lists[dest.droppableId].forEach(({ uuid }, i) => {
+        draft[dest.droppableId][uuid] = i
+      })
+    })
+
+    await logseq.Editor.upsertBlockProperty(
+      board.uuid,
+      "configs",
+      JSON.stringify({ ...board.configs, order }),
+    )
+
     onRefresh()
   }
 
