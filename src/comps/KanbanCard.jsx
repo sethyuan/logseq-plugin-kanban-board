@@ -16,7 +16,13 @@ const HIDDEN_PROP_NAMES = new Set([
   "scroll-top",
 ])
 
-export default function KanbanCard({ block: data, property, listName, index }) {
+export default function KanbanCard({
+  block: data,
+  property,
+  listName,
+  index,
+  canArchive = false,
+}) {
   const [block, setBlock] = useState(data)
   const rootRef = useRef()
   const [menuData, setMenuData] = useState({ visible: false })
@@ -275,7 +281,7 @@ export default function KanbanCard({ block: data, property, listName, index }) {
               <button class="kef-kb-menu-item" onClick={onDeleteCard}>
                 {t("Delete card")}
               </button>
-              {property && (
+              {canArchive && (
                 <button class="kef-kb-menu-item" onClick={onArchiveCard}>
                   {t("Archive card")}
                 </button>

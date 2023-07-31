@@ -524,6 +524,7 @@ function provideStyles() {
       background-color: var(--ls-secondary-background-color);
       padding: 0.5em 0;
       z-index: var(--ls-z-index-level-2);
+      min-width: 130px;
     }
     .kef-kb-menu:focus-visible {
       outline: none;

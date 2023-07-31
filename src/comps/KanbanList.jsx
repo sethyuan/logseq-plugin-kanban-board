@@ -76,6 +76,7 @@ export default function KanbanList({ name, blocks, property, index, width }) {
                     property={property}
                     listName={name}
                     index={i}
+                    canArchive
                   />
                 ))}
                 {provided.placeholder}

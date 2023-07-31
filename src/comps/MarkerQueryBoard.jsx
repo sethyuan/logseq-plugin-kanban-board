@@ -107,6 +107,7 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
 
   const deleteCard = useCallback(async (uuid) => {
     await logseq.Editor.removeBlock(uuid)
+    onRefresh()
   }, [])
 
   const contextValue = useMemo(
