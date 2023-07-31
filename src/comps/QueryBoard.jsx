@@ -56,15 +56,13 @@ export default function QueryBoard({
     await logseq.Editor.upsertBlockProperty(block.uuid, list, dest.droppableId)
 
     const order = produce(board.configs.order ?? {}, (draft) => {
-      if (draft[src.droppableId] == null) {
-        draft[src.droppableId] = {}
-      }
-      if (draft[dest.droppableId] == null) {
-        draft[dest.droppableId] = {}
-      }
-      if (src.droppableId !== dest.droppableId) {
+      if (
+        src.droppableId !== dest.droppableId &&
+        draft[src.droppableId] != null
+      ) {
         delete draft[src.droppableId][block.uuid]
       }
+      draft[dest.droppableId] = {}
       viewUpdated.lists[dest.droppableId].forEach(({ uuid }, i) => {
         draft[dest.droppableId][uuid] = i
         persistBlockUUID(uuid)
@@ -101,7 +99,13 @@ export default function QueryBoard({
 
     await logseq.Editor.updateBlock(
       board.uuid,
-      `{{renderer :kboard-query, ${board.name}, ${list}, ${keys.join(", ")}}}`,
+      coverProp
+        ? `{{renderer :kboard-query, ${board.name}, ${list}, ${keys.join(
+            ", ",
+          )}, ${coverProp}, ${columnWidth}}}`
+        : `{{renderer :kboard-query, ${board.name}, ${list}, ${keys.join(
+            ", ",
+          )}}}`,
     )
   }
 
@@ -140,7 +144,12 @@ export default function QueryBoard({
       sensors={[useMouseSensor]}
     >
       <BoardContext.Provider value={contextValue}>
-        <Droppable droppableId="board" direction="horizontal" type="LIST">
+        <Droppable
+          droppableId="board"
+          direction="horizontal"
+          type="LIST"
+          isDropDisabled={!board.isFixedLists}
+        >
           {(provided, snapshot) => (
             <div
               class="kef-kb-board"
@@ -191,6 +200,7 @@ export default function QueryBoard({
                     width={columnWidth}
                     index={i}
                     coverProp={coverProp}
+                    canMoveList={board.isFixedLists}
                   />
                 ))}
                 {provided.placeholder}

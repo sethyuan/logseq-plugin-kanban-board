@@ -94,13 +94,11 @@ export function groupBy(arr, selector) {
   for (const x of arr) {
     const k = selector(x)
     if (!k) continue
-    const keys = Array.isArray(k) ? k.map((key) => `[[${key}]]`) : [k]
-    for (const key of keys) {
-      if (ret[key] == null) {
-        ret[key] = []
-      }
-      ret[key].push(x)
+    const key = Array.isArray(k) ? `[[${k[0]}]]` : k
+    if (ret[key] == null) {
+      ret[key] = []
     }
+    ret[key].push(x)
   }
   return ret
 }

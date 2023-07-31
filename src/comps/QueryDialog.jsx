@@ -71,11 +71,8 @@ export default function QueryDialog({ visible, onConfirm, onClose }) {
         class="kef-kb-dialog-input"
         type="text"
         placeholder={t("Comma separated property values")}
-        {...register("propertyValues", { required: true })}
+        {...register("propertyValues")}
       />
-      {errors.propertyValues && (
-        <p class="kef-kb-dialog-err">{t("Required.")}</p>
-      )}
       <div>
         <button class="kef-kb-dialog-btn" type="submit">
           {t("OK")}

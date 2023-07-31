@@ -83,15 +83,13 @@ export default function MarkerQueryBoard({
     )
 
     const order = produce(board.configs.order ?? {}, (draft) => {
-      if (draft[src.droppableId] == null) {
-        draft[src.droppableId] = {}
-      }
-      if (draft[dest.droppableId] == null) {
-        draft[dest.droppableId] = {}
-      }
-      if (src.droppableId !== dest.droppableId) {
+      if (
+        src.droppableId !== dest.droppableId &&
+        draft[src.droppableId] != null
+      ) {
         delete draft[src.droppableId][block.uuid]
       }
+      draft[dest.droppableId] = {}
       viewUpdated.lists[dest.droppableId].forEach(({ uuid }, i) => {
         draft[dest.droppableId][uuid] = i
         persistBlockUUID(uuid)
@@ -103,6 +101,8 @@ export default function MarkerQueryBoard({
       "configs",
       JSON.stringify({ ...board.configs, order }),
     )
+
+    onRefresh()
   }
 
   const writeDuration = useCallback(async (block, listName) => {

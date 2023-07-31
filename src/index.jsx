@@ -88,7 +88,9 @@ async function main() {
   logseq.Editor.registerSlashCommand("Kanban Board (Query)", () => {
     openQueryDialog(async (name, property, propertyValues) => {
       await logseq.Editor.insertAtEditingCursor(
-        `{{renderer :kboard-query, ${name}, ${property}, ${propertyValues}}}`,
+        propertyValues
+          ? `{{renderer :kboard-query, ${name}, ${property}, ${propertyValues}}}`
+          : `{{renderer :kboard-query, ${name}, ${property}}}`,
       )
       const currentBlock = await logseq.Editor.getCurrentBlock()
       await logseq.Editor.insertBlock(
@@ -773,14 +775,13 @@ async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
   const list = args[2]?.trim()
   if (!list) return
 
-  // 4 arguments should go before the column width.
+  // 3 arguments should go before the column width.
   const hasColumnWidth =
-    args.length > 4 && /(?:[0-9]px|%)\s*$/i.test(args[args.length - 1])
+    args.length > 3 && /(?:[0-9]px|%)\s*$/i.test(args[args.length - 1])
 
   const listValues = args
     .slice(3, hasColumnWidth ? args.length - 2 : args.length)
     .map((v) => v.trim())
-  if (!listValues.length) return
 
   const coverProp = hasColumnWidth ? args[args.length - 2].trim() : undefined
   const columnWidth = hasColumnWidth ? args[args.length - 1].trim() : undefined
@@ -1224,20 +1225,7 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
       boardBlock.properties?.configs ?? '{"tagColors": {}}',
     )
 
-    const lists = listValues.reduce((obj, listName) => {
-      obj[listName] = []
-      return obj
-    }, {})
-
-    for (const block of data) {
-      const listPropValue = block.properties?.[list]
-      const propValue = Array.isArray(listPropValue)
-        ? `[[${listPropValue[0]}]]`
-        : listPropValue
-      if (lists[propValue] != null) {
-        lists[propValue].push(block)
-      }
-    }
+    const lists = getQueryLists(data, list, listValues)
 
     const order = configs.order ?? {}
     for (const [key, list] of Object.entries(lists)) {
@@ -1270,7 +1258,14 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
       }
     }
 
-    return { name, uuid, lists, tags: allTags, configs }
+    return {
+      name,
+      uuid,
+      lists,
+      tags: allTags,
+      configs,
+      isFixedLists: listValues.length > 0,
+    }
   } catch (err) {
     console.error(err)
     return {
@@ -1280,6 +1275,29 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
       tags: new Set(),
       configs: { tagColors: {} },
     }
+  }
+}
+
+function getQueryLists(data, list, listValues) {
+  if (listValues.length === 0) {
+    return groupBy(data, (block) => block.properties[list])
+  } else {
+    const lists = listValues.reduce((obj, listName) => {
+      obj[listName] = []
+      return obj
+    }, {})
+
+    for (const block of data) {
+      const listPropValue = block.properties?.[list]
+      const propValue = Array.isArray(listPropValue)
+        ? `[[${listPropValue[0]}]]`
+        : listPropValue
+      if (lists[propValue] != null) {
+        lists[propValue].push(block)
+      }
+    }
+
+    return lists
   }
 }
 

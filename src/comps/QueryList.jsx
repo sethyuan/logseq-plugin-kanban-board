@@ -8,13 +8,14 @@ export default function QueryList({
   width,
   index,
   coverProp,
+  canMoveList,
 }) {
   function stopPropagation(e) {
     e.stopPropagation()
   }
 
   return (
-    <Draggable draggableId={name} index={index}>
+    <Draggable draggableId={name} index={index} isDragDisabled={!canMoveList}>
       {(provided, snapshot) => (
         <div
           class="kef-kb-list"
