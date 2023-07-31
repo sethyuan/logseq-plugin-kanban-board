@@ -22,7 +22,11 @@ export default function QueryDialog({ visible, onConfirm, onClose }) {
   }, [visible])
 
   function confirm(data) {
-    onConfirm(data.name, data.property, data.propertyValues)
+    onConfirm(
+      data.name,
+      data.property,
+      data.propertyValues?.replaceAll("，", ","),
+    )
   }
 
   function onKeyDown(e) {
