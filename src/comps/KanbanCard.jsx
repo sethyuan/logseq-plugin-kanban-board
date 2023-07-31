@@ -21,6 +21,7 @@ export default function KanbanCard({
   property,
   listName,
   index,
+  coverProp,
   canArchive = false,
 }) {
   const [block, setBlock] = useState(data)
@@ -52,7 +53,7 @@ export default function KanbanCard({
         onRefresh()
       } else {
         const [content, tags, props, cover, scheduled, deadline] =
-          await parseContent(updated.content)
+          await parseContent(updated.content, coverProp)
         updated.data = {
           content,
           tags,

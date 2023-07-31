@@ -397,7 +397,7 @@ function provideStyles() {
     }
     .kef-kb-card {
       background-color: var(--ls-primary-background-color);
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       padding-bottom: 8px;
       box-shadow: 0px 0px 2px 0 var(--ls-block-bullet-border-color);
       border-radius: 2px;
@@ -727,14 +727,16 @@ async function markerQueryRenderer({
   const name = args[1]?.trim()
   if (!name) return
 
+  // 4 arguments should go before the column width.
   const hasColumnWidth =
-    args.length > 3 && /(?:px|%)\s*$/i.test(args[args.length - 1])
+    args.length > 4 && /(?:[0-9]px|%)\s*$/i.test(args[args.length - 1])
 
   const lists = args
-    .slice(2, hasColumnWidth ? args.length - 1 : args.length)
+    .slice(2, hasColumnWidth ? args.length - 2 : args.length)
     .map((arg) => arg.trim())
   if (!lists.length) return
 
+  const coverProp = hasColumnWidth ? args[args.length - 2].trim() : undefined
   const columnWidth = hasColumnWidth ? args[args.length - 1].trim() : undefined
 
   const slotEl = parent.document.getElementById(slot)
@@ -756,7 +758,7 @@ async function markerQueryRenderer({
   })
 
   setTimeout(async () => {
-    renderMarkerQueryKanban(key, uuid, name, lists, columnWidth)
+    renderMarkerQueryKanban(key, uuid, name, lists, coverProp, columnWidth)
   }, 0)
 }
 
@@ -771,14 +773,16 @@ async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
   const list = args[2]?.trim()
   if (!list) return
 
+  // 4 arguments should go before the column width.
   const hasColumnWidth =
-    args.length > 3 && /(?:px|%)\s*$/i.test(args[args.length - 1])
+    args.length > 4 && /(?:[0-9]px|%)\s*$/i.test(args[args.length - 1])
 
   const listValues = args
-    .slice(3, hasColumnWidth ? args.length - 1 : args.length)
+    .slice(3, hasColumnWidth ? args.length - 2 : args.length)
     .map((v) => v.trim())
   if (!listValues.length) return
 
+  const coverProp = hasColumnWidth ? args[args.length - 2].trim() : undefined
   const columnWidth = hasColumnWidth ? args[args.length - 1].trim() : undefined
 
   const slotEl = parent.document.getElementById(slot)
@@ -800,7 +804,7 @@ async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
   })
 
   setTimeout(async () => {
-    renderQueryKanban(key, uuid, name, list, listValues, columnWidth)
+    renderQueryKanban(key, uuid, name, list, listValues, coverProp, columnWidth)
   }, 0)
 }
 
@@ -894,6 +898,7 @@ async function renderKanban(
     <KanbanBoard
       board={data}
       property={property}
+      coverProp={coverProp}
       columnWidth={columnWidth}
       uuid={uuid}
     />,
@@ -1074,15 +1079,23 @@ function* infinitePalette(palette) {
   }
 }
 
-async function renderMarkerQueryKanban(id, uuid, name, lists, columnWidth) {
+async function renderMarkerQueryKanban(
+  id,
+  uuid,
+  name,
+  lists,
+  coverProp,
+  columnWidth,
+) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  const data = await getMarkerQueryBoardData(uuid, name, lists)
+  const data = await getMarkerQueryBoardData(uuid, name, lists, coverProp)
   await maintainTagColors(uuid, data.tags, data.configs)
   render(
     <MarkerQueryBoard
       board={data}
+      coverProp={coverProp}
       columnWidth={columnWidth}
       onRefresh={() =>
         renderMarkerQueryKanban(id, uuid, name, lists, columnWidth)
@@ -1098,17 +1111,19 @@ async function renderQueryKanban(
   name,
   list,
   listValues,
+  coverProp,
   columnWidth,
 ) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  const data = await getQueryBoardData(uuid, name, list, listValues)
+  const data = await getQueryBoardData(uuid, name, list, listValues, coverProp)
   await maintainTagColors(uuid, data.tags, data.configs)
   render(
     <QueryBoard
       board={data}
       list={list}
+      coverProp={coverProp}
       columnWidth={columnWidth}
       onRefresh={() =>
         renderQueryKanban(id, uuid, name, list, listValues, columnWidth)
@@ -1118,7 +1133,7 @@ async function renderQueryKanban(
   )
 }
 
-async function getMarkerQueryBoardData(uuid, name, statuses) {
+async function getMarkerQueryBoardData(uuid, name, statuses, coverProp) {
   const boardBlock = await logseq.Editor.getBlock(uuid, {
     includeChildren: true,
   })
@@ -1150,7 +1165,7 @@ async function getMarkerQueryBoardData(uuid, name, statuses) {
       lists[task.marker].push(task)
 
       const [content, tags, props, cover, scheduled, deadline] =
-        await parseContent(task.content)
+        await parseContent(task.content, coverProp)
       task.data = {
         content,
         tags,
@@ -1184,7 +1199,7 @@ async function getMarkerQueryBoardData(uuid, name, statuses) {
   }
 }
 
-async function getQueryBoardData(uuid, name, list, listValues) {
+async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
   const boardBlock = await logseq.Editor.getBlock(uuid, {
     includeChildren: true,
   })
@@ -1237,7 +1252,7 @@ async function getQueryBoardData(uuid, name, list, listValues) {
     const allTags = new Set()
     for (const block of data) {
       const [content, tags, props, cover, scheduled, deadline] =
-        await parseContent(block.content)
+        await parseContent(block.content, coverProp)
       block.data = {
         content:
           block["preBlock?"] ?? block["pre-block?"]

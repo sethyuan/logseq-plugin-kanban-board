@@ -1,7 +1,7 @@
 import { Droppable } from "../../deps/react-beautiful-dnd"
 import KanbanCard from "./KanbanCard"
 
-export default function MarkerQueryList({ name, blocks, width }) {
+export default function MarkerQueryList({ name, blocks, width, coverProp }) {
   function stopPropagation(e) {
     e.stopPropagation()
   }
@@ -28,6 +28,7 @@ export default function MarkerQueryList({ name, blocks, width }) {
                 block={block}
                 listName={name}
                 index={i}
+                coverProp={coverProp}
               />
             ))}
             {provided.placeholder}

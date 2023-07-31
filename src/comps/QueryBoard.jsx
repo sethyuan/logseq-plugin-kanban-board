@@ -13,7 +13,13 @@ import { persistBlockUUID } from "../libs/utils"
 import DropDown from "./DropDown"
 import QueryList from "./QueryList"
 
-export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
+export default function QueryBoard({
+  board,
+  list,
+  coverProp,
+  columnWidth,
+  onRefresh,
+}) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
 
@@ -184,6 +190,7 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
                     blocks={view.lists[name]}
                     width={columnWidth}
                     index={i}
+                    coverProp={coverProp}
                   />
                 ))}
                 {provided.placeholder}

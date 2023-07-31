@@ -1,7 +1,14 @@
 import { Draggable, Droppable } from "../../deps/react-beautiful-dnd"
 import KanbanCard from "./KanbanCard"
 
-export default function QueryList({ name, blocks, property, width, index }) {
+export default function QueryList({
+  name,
+  blocks,
+  property,
+  width,
+  index,
+  coverProp,
+}) {
   function stopPropagation(e) {
     e.stopPropagation()
   }
@@ -40,6 +47,7 @@ export default function QueryList({ name, blocks, property, width, index }) {
                     listName={name}
                     index={i}
                     property={property}
+                    coverProp={coverProp}
                   />
                 ))}
                 {provided.placeholder}

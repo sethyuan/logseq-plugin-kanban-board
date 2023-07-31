@@ -36,8 +36,8 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-8
 - 支持设置每列的宽度，可以使用 `px` 和 `%` 作为单位。
   ```
   {{renderer :kboard, ((board block ref)), list, cover, 49%}}
-  {{renderer :kboard-query, name, list, list a,  list b, 49%}}
-  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, 49%}}
+  {{renderer :kboard-query, name, list, list a,  list b, cover, 49%}}
+  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, cover, 49%}}
   ```
 
 ## 对列表数据格式的要求

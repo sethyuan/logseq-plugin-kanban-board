@@ -9,7 +9,12 @@ import { persistBlockUUID } from "../libs/utils"
 import DropDown from "./DropDown"
 import MarkerQueryList from "./MarkerQueryList"
 
-export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
+export default function MarkerQueryBoard({
+  board,
+  coverProp,
+  columnWidth,
+  onRefresh,
+}) {
   const { view, setView, renderFilterPopup } = useFilter(board)
   const { listRef, ...moveEvents } = useDragMove()
 
@@ -167,6 +172,7 @@ export default function MarkerQueryBoard({ board, columnWidth, onRefresh }) {
                 name={name}
                 blocks={blocks}
                 width={columnWidth}
+                coverProp={coverProp}
               />
             ))}
           </div>

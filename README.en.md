@@ -36,8 +36,8 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-8
 - Support setting the width of each column, you can use `px` and `%` as units.
   ```
   {{renderer :kboard, ((board block ref)), list, cover, 49%}}
-  {{renderer :kboard-query, name, list, list a,  list b, 49%}}
-  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, 49%}}
+  {{renderer :kboard-query, name, list, list a,  list b, cover, 49%}}
+  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, cover, 49%}}
   ```
 
 ## List data structure
