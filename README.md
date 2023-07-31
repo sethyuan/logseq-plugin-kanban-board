@@ -14,7 +14,6 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/d89016eb-6
 
 https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-831f-4006-8c26-2e8210fc6e4e
 
-
 ## 功能
 
 - 使用 Logseq 列表数据创建看板。
@@ -37,7 +36,8 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-8
 - 支持设置每列的宽度，可以使用 `px` 和 `%` 作为单位。
   ```
   {{renderer :kboard, ((board block ref)), list, cover, 49%}}
-  {{renderer :kboard-query, name, list, 49%}}
+  {{renderer :kboard-query, name, list, list a,  list b, 49%}}
+  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, 49%}}
   ```
 
 ## 对列表数据格式的要求
@@ -61,8 +61,8 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-8
 1. 通过斜线命令 `/Kanban Board`，在打开的输入框中输入以上数据格式的块引用和属性名。
 1. 在根块上（以上示例中为 "board"）点击小圆点打开上下文菜单，选择 `创建看板`，在打开的输入框中输入属性名，块引用已自动填充好。
 1. 通过斜线命令 `/Kanban Board (Empty)`，插件会自动帮你创建一个空白看板以及其对应的数据。
-1. 通过斜线命令 `/Kanban Board (Query)`，插件会自动帮你创建一个基于一般查询的看板。第一个参数为看板名称，第二个参数为想要作为列表显示的属性。
-1. 通过斜线命令 `/Kanban Board (Task Query)`，插件会自动帮你创建一个基于返回任务的查询的看板。第一个参数为看板名称，其余参数为想要作为列表显示的任务状态。
+1. 通过斜线命令 `/Kanban Board (Query)`，插件会自动帮你创建一个基于一般查询的看板。第一个参数为看板名称，第二个参数为想要作为列表显示的属性，其余参数为想要作为列表显示的各属性值，列宽可作为最后一个参数传递（必须以 px 或%结尾）。
+1. 通过斜线命令 `/Kanban Board (Task Query)`，插件会自动帮你创建一个基于返回任务的查询的看板。第一个参数为看板名称，其余参数为想要作为列表显示的任务状态，列宽可作为最后一个参数传递（必须以 px 或%结尾）。
 
 ## NOTE
 

@@ -7,7 +7,7 @@ export default function MarkerQueryList({ name, blocks, width }) {
   }
 
   return (
-    <div class="kef-kb-list">
+    <div class="kef-kb-list" style={width && { width }}>
       <div class="kef-kb-list-title">
         <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
           {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
@@ -21,7 +21,6 @@ export default function MarkerQueryList({ name, blocks, width }) {
             class="kef-kb-list-cards"
             ref={provided.innerRef}
             {...provided.droppableProps}
-            style={width && { width }}
           >
             {blocks?.map((block, i) => (
               <KanbanCard

@@ -22,7 +22,7 @@ export default function QueryDialog({ visible, onConfirm, onClose }) {
   }, [visible])
 
   function confirm(data) {
-    onConfirm(data.name, data.property)
+    onConfirm(data.name, data.property, data.propertyValues)
   }
 
   function onKeyDown(e) {
@@ -61,6 +61,16 @@ export default function QueryDialog({ visible, onConfirm, onClose }) {
         {...register("property", { required: true })}
       />
       {errors.property && <p class="kef-kb-dialog-err">{t("Required.")}</p>}
+      <input
+        id="kef-kb-qdialog-propvinput"
+        class="kef-kb-dialog-input"
+        type="text"
+        placeholder={t("Comma separated property values")}
+        {...register("propertyValues", { required: true })}
+      />
+      {errors.propertyValues && (
+        <p class="kef-kb-dialog-err">{t("Required.")}</p>
+      )}
       <div>
         <button class="kef-kb-dialog-btn" type="submit">
           {t("OK")}

@@ -102,13 +102,9 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
       }, {}),
     })
 
-    await logseq.Editor.upsertBlockProperty(
+    await logseq.Editor.updateBlock(
       board.uuid,
-      "configs",
-      JSON.stringify({
-        ...board.configs,
-        listOrders: keys,
-      }),
+      `{{renderer :kboard-query, ${board.name}, ${list}, ${keys.join(", ")}}}`,
     )
   }
 

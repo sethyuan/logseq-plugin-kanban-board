@@ -36,7 +36,8 @@ https://github.com/sethyuan/logseq-plugin-kanban-board/assets/3410293/a2d99736-8
 - Support setting the width of each column, you can use `px` and `%` as units.
   ```
   {{renderer :kboard, ((board block ref)), list, cover, 49%}}
-  {{renderer :kboard-query, name, list, 49%}}
+  {{renderer :kboard-query, name, list, list a,  list b, 49%}}
+  {{renderer :kboard-marker-query, name, LATER, NOW, DONE, 49%}}
   ```
 
 ## List data structure
@@ -60,8 +61,8 @@ There are 3 ways to create a Kanban:
 1. Using the slash command `/Kanban Board`, input the block reference and the property name in above data format in the dialog that opens.
 1. Click the dot on the root block (`board` in the above example) to open the context menu, select `Kanban Board`, and input the property name in the dialog that opens, the block reference is filled for you automatically.
 1. Using the slash command `/Kanban Board (Empty)`, the plugin will automatically create an empty kanban board and its data for you.
-1. Using the slash command `/Kanban Board (Query)`, the plugin will automatically create a Kanban board based on an query that returns blocks. The first parameter is the name of the Kanban board, the second parameter is the property to be used as lists.
-1. Using the slash command `/Kanban Board (Task Query)`, the plugin will automatically create a Kanban board based on an query that returns tasks. The first parameter is the name of the Kanban board, and the remaining parameters are the task status that you want to display as lists.
+1. Using the slash command `/Kanban Board (Query)`, the plugin will automatically create a Kanban board based on an query that returns blocks. The first parameter is the name of the Kanban board, the second parameter is the property to be used as lists, the remaining parameters are the property values that you want to display as lists, column width can be given as the last parameter (must end with either 'px' or '%').
+1. Using the slash command `/Kanban Board (Task Query)`, the plugin will automatically create a Kanban board based on an query that returns tasks. The first parameter is the name of the Kanban board, the remaining parameters are the task status that you want to display as lists, column width can be given as the last parameter (must end with either 'px' or '%').
 
 ## NOTE
 

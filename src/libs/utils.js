@@ -108,16 +108,3 @@ export function groupBy(arr, selector) {
   }
   return ret
 }
-
-export function orderObjectByList(obj, keys) {
-  if (!keys?.length) return obj
-  const ret = {}
-  for (const key of keys) {
-    ret[key] = obj[key]
-  }
-  const restOfKeys = Object.keys(obj).filter((k) => !keys.includes(k))
-  for (const key of restOfKeys) {
-    ret[key] = obj[key]
-  }
-  return ret
-}

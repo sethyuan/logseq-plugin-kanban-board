@@ -10,7 +10,7 @@ export default function useDragMove() {
   const onMouseDown = useCallback((e) => {
     // Drag move is not allowed in the list name region.
     for (let i = 0; i < 2; i++) {
-      if (e.path[i].classList.contains("kef-kb-list-title")) {
+      if (e.path?.[i].classList.contains("kef-kb-list-title")) {
         return
       }
     }

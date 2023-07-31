@@ -10,12 +10,7 @@ import MarkerQueryBoard from "./comps/MarkerQueryBoard"
 import QueryBoard from "./comps/QueryBoard"
 import QueryDialog from "./comps/QueryDialog"
 import RefDialog from "./comps/RefDialog"
-import {
-  groupBy,
-  orderObjectByList,
-  parseContent,
-  persistBlockUUID,
-} from "./libs/utils"
+import { groupBy, parseContent, persistBlockUUID } from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
@@ -91,9 +86,9 @@ async function main() {
   })
 
   logseq.Editor.registerSlashCommand("Kanban Board (Query)", () => {
-    openQueryDialog(async (name, property) => {
+    openQueryDialog(async (name, property, propertyValues) => {
       await logseq.Editor.insertAtEditingCursor(
-        `{{renderer :kboard-query, ${name}, ${property}}}`,
+        `{{renderer :kboard-query, ${name}, ${property}, ${propertyValues}}}`,
       )
       const currentBlock = await logseq.Editor.getCurrentBlock()
       await logseq.Editor.insertBlock(
@@ -731,8 +726,15 @@ async function markerQueryRenderer({
   const name = args[1]?.trim()
   if (!name) return
 
-  const lists = args.slice(2).map((arg) => arg.trim())
-  if (lists.length < 1) return
+  const hasColumnWidth =
+    args.length > 3 && /(?:px|%)\s*$/i.test(args[args.length - 1])
+
+  const lists = args
+    .slice(2, hasColumnWidth ? args.length - 1 : args.length)
+    .map((arg) => arg.trim())
+  if (!lists.length) return
+
+  const columnWidth = hasColumnWidth ? args[args.length - 1].trim() : undefined
 
   const slotEl = parent.document.getElementById(slot)
   if (!slotEl) return
@@ -753,7 +755,7 @@ async function markerQueryRenderer({
   })
 
   setTimeout(async () => {
-    renderMarkerQueryKanban(key, uuid, name, lists)
+    renderMarkerQueryKanban(key, uuid, name, lists, columnWidth)
   }, 0)
 }
 
@@ -768,7 +770,15 @@ async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
   const list = args[2]?.trim()
   if (!list) return
 
-  const columnWidth = args[3]?.trim()
+  const hasColumnWidth =
+    args.length > 3 && /(?:px|%)\s*$/i.test(args[args.length - 1])
+
+  const listValues = args
+    .slice(3, hasColumnWidth ? args.length - 1 : args.length)
+    .map((v) => v.trim())
+  if (!listValues.length) return
+
+  const columnWidth = hasColumnWidth ? args[args.length - 1].trim() : undefined
 
   const slotEl = parent.document.getElementById(slot)
   if (!slotEl) return
@@ -789,7 +799,7 @@ async function queryRenderer({ slot, payload: { arguments: args, uuid } }) {
   })
 
   setTimeout(async () => {
-    renderQueryKanban(key, uuid, name, list, columnWidth)
+    renderQueryKanban(key, uuid, name, list, listValues, columnWidth)
   }, 0)
 }
 
@@ -827,9 +837,9 @@ function openQueryDialog(callback) {
   render(
     <QueryDialog
       visible={{}}
-      onConfirm={(name, property) => {
+      onConfirm={(name, property, propertyValues) => {
         closeDialog()
-        callback(name, property)
+        callback(name, property, propertyValues)
       }}
       onClose={() => {
         closeDialog()
@@ -1073,24 +1083,35 @@ async function renderMarkerQueryKanban(id, uuid, name, lists, columnWidth) {
     <MarkerQueryBoard
       board={data}
       columnWidth={columnWidth}
-      onRefresh={() => renderMarkerQueryKanban(id, uuid, name, lists)}
+      onRefresh={() =>
+        renderMarkerQueryKanban(id, uuid, name, lists, columnWidth)
+      }
     />,
     el,
   )
 }
 
-async function renderQueryKanban(id, uuid, name, list, columnWidth) {
+async function renderQueryKanban(
+  id,
+  uuid,
+  name,
+  list,
+  listValues,
+  columnWidth,
+) {
   const el = parent.document.getElementById(id)
   if (el == null || !el.isConnected) return
 
-  const data = await getQueryBoardData(uuid, name, list)
+  const data = await getQueryBoardData(uuid, name, list, listValues)
   await maintainTagColors(uuid, data.tags, data.configs)
   render(
     <QueryBoard
       board={data}
       list={list}
       columnWidth={columnWidth}
-      onRefresh={() => renderQueryKanban(id, uuid, name, list)}
+      onRefresh={() =>
+        renderQueryKanban(id, uuid, name, list, listValues, columnWidth)
+      }
     />,
     el,
   )
@@ -1152,7 +1173,7 @@ async function getMarkerQueryBoardData(uuid, name, statuses) {
   }
 }
 
-async function getQueryBoardData(uuid, name, list) {
+async function getQueryBoardData(uuid, name, list, listValues) {
   const boardBlock = await logseq.Editor.getBlock(uuid, {
     includeChildren: true,
   })
@@ -1177,10 +1198,16 @@ async function getQueryBoardData(uuid, name, list) {
       boardBlock.properties?.configs ?? '{"tagColors": {}}',
     )
 
-    const lists = orderObjectByList(
-      groupBy(data, (block) => block.properties[list]),
-      configs.listOrders,
-    )
+    const lists = listValues.reduce((obj, listName) => {
+      obj[listName] = []
+      return obj
+    }, {})
+    for (const block of data) {
+      const propValue = block.properties?.[list]
+      if (lists[propValue] != null) {
+        lists[propValue].push(block)
+      }
+    }
 
     const allTags = new Set()
     for (const block of data) {
