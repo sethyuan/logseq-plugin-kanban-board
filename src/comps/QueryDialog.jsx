@@ -14,6 +14,7 @@ export default function QueryDialog({ visible, onConfirm, onClose }) {
     reset({
       name: "",
       property: "",
+      propertyValues: "",
     })
 
     if (visible) {
