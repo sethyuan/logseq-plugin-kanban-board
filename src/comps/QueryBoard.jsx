@@ -45,39 +45,8 @@ export default function QueryBoard({ board, list, columnWidth, onRefresh }) {
     setView(viewUpdated)
 
     const block = view.lists[src.droppableId][src.index]
-    const listValue = block.properties[list].slice()
-    if (Array.isArray(listValue)) {
-      let indexToRemove = -1
-      let hasDestList = false
-      for (let i = 0; i < listValue.length; i++) {
-        const value = `[[${listValue[i]}]]`
-        if (value === src.droppableId) {
-          indexToRemove = i
-        } else if (value === dest.droppableId) {
-          hasDestList = true
-        }
-        listValue[i] = value
-      }
-      if (indexToRemove > -1) {
-        listValue.splice(indexToRemove, 1)
-      }
-      if (!hasDestList) {
-        listValue.push(dest.droppableId)
-      }
-      const lines = block.content.split("\n")
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].startsWith(`${list}:: `)) {
-          lines[i] = `${list}:: ${listValue.join(",")}`
-        }
-      }
-      await logseq.Editor.updateBlock(block.uuid, lines.join("\n"))
-    } else {
-      await logseq.Editor.upsertBlockProperty(
-        block.uuid,
-        list,
-        dest.droppableId,
-      )
-    }
+
+    await logseq.Editor.upsertBlockProperty(block.uuid, list, dest.droppableId)
 
     const order = produce(board.configs.order ?? {}, (draft) => {
       if (draft[src.droppableId] == null) {

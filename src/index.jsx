@@ -1214,7 +1214,10 @@ async function getQueryBoardData(uuid, name, list, listValues) {
     }, {})
 
     for (const block of data) {
-      const propValue = block.properties?.[list]
+      const listPropValue = block.properties?.[list]
+      const propValue = Array.isArray(listPropValue)
+        ? `[[${listPropValue[0]}]]`
+        : listPropValue
       if (lists[propValue] != null) {
         lists[propValue].push(block)
       }
