@@ -14,6 +14,15 @@ export async function parseContent(content, coverProp = "cover") {
     ).map((m) => m[1] ?? m[2]),
   )
 
+  const tagsPropIndex = props.findIndex(([k]) => k === "tags")
+  if (tagsPropIndex > -1) {
+    const [, tagsPropValue] = props[tagsPropIndex]
+    for (const t of tagsPropValue.split(/,，/)) {
+      tags.add(t.replace(/^\s*\[\[((?:[^\]]|\](?!\]))+)\]\]\s*$/, "$1"))
+    }
+    props.splice(tagsPropIndex, 1)
+  }
+
   const coverIndex = props.findIndex(([k]) => k === coverProp)
   const cover = coverIndex > -1 ? await getImgSrc(props[coverIndex][1]) : null
   if (coverIndex > -1) {

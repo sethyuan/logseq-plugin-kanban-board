@@ -1245,6 +1245,7 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
         content:
           block["preBlock?"] ?? block["pre-block?"]
             ? block.page.originalName ??
+              block.page["original-name"] ??
               (await logseq.Editor.getPage(block.page.id)).originalName
             : content,
         tags,
