@@ -102,12 +102,18 @@ export function groupBy(arr, selector) {
   const ret = {}
   for (const x of arr) {
     const k = selector(x)
-    if (!k) continue
-    const key = Array.isArray(k) ? `[[${k[0]}]]` : k
-    if (ret[key] == null) {
-      ret[key] = []
+    if (!k) {
+      if (ret["(ungrouped)"] == null) {
+        ret["(ungrouped)"] = []
+      }
+      ret["(ungrouped)"].push(x)
+    } else {
+      const key = Array.isArray(k) ? `[[${k[0]}]]` : k
+      if (ret[key] == null) {
+        ret[key] = []
+      }
+      ret[key].push(x)
     }
-    ret[key].push(x)
   }
   return ret
 }

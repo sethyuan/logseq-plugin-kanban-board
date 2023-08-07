@@ -1219,7 +1219,7 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
         : await logseq.DB.q(qs)) ?? []
     )
       .flat()
-      .filter((block) => !block.name && block.properties?.[list])
+      .filter((block) => !block.name)
 
     const configs = JSON.parse(
       boardBlock.properties?.configs ?? '{"tagColors": {}}',
@@ -1295,6 +1295,11 @@ function getQueryLists(data, list, listValues) {
         : listPropValue
       if (lists[propValue] != null) {
         lists[propValue].push(block)
+      } else {
+        if (lists["(ungrouped)"] == null) {
+          lists["(ungrouped)"] = []
+        }
+        lists["(ungrouped)"].push(block)
       }
     }
 
