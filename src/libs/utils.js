@@ -1,3 +1,4 @@
+import { parse as parseD } from "date-fns"
 import { parse } from "./marked-renderer.js"
 
 export async function parseContent(content, coverProp = "cover") {
@@ -116,4 +117,16 @@ export function groupBy(arr, selector) {
     }
   }
   return ret
+}
+
+export function parseDate(content) {
+  // sample: \nSCHEDULED: <2022-11-07 Mon 23:18 .+1d>
+  if (!content) return [null, null]
+  const match = content.match(
+    /\n\s*(?:SCHEDULED|DEADLINE): \<(\d{4}-\d{1,2}-\d{1,2} [a-z]{3} \d{1,2}:\d{1,2})(?: [\.\+]\+(\d+[ymwdh]))?\>/i,
+  )
+  if (!match) return [null, null]
+  const [, dateStr, repeat] = match
+  const date = parseD(dateStr, "yyyy-MM-dd EEE HH:mm", new Date())
+  return [date, repeat]
 }

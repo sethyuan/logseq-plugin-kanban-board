@@ -10,7 +10,12 @@ import MarkerQueryBoard from "./comps/MarkerQueryBoard"
 import QueryBoard from "./comps/QueryBoard"
 import QueryDialog from "./comps/QueryDialog"
 import RefDialog from "./comps/RefDialog"
-import { groupBy, parseContent, persistBlockUUID } from "./libs/utils"
+import {
+  groupBy,
+  parseContent,
+  parseDate,
+  persistBlockUUID,
+} from "./libs/utils"
 import zhCN from "./translations/zh-CN.json"
 
 const DIALOG_ID = "kef-kb-dialog"
@@ -32,6 +37,7 @@ const BUILTIN_COLORS = [
 
 let dialogContainer
 let offHooks = {}
+let lang = "en-US"
 
 async function main() {
   await setup({ builtinTranslations: { "zh-CN": zhCN } })
@@ -49,6 +55,19 @@ async function main() {
     locale: preferredLanguage === "zh-CN" ? dateZhCN : undefined,
     weekStartsOn: weekStart,
   })
+
+  logseq.useSettingsSchema([
+    {
+      key: "sortingLocale",
+      type: "string",
+      default: "",
+      description: t(
+        "Locale used in sorting query results. E.g, zh-CN. Keep it empty to use Logseq's language setting.",
+      ),
+    },
+  ])
+
+  lang = logseq.settings?.sortingLocale || preferredLanguage
 
   logseq.provideUI({
     key: DIALOG_ID,
@@ -1220,6 +1239,18 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
     )
       .flat()
       .filter((block) => !block.name)
+      .sort((a, b) => {
+        if ((a.scheduled ?? a.deadline) && (b.scheduled ?? b.deadline)) {
+          const [aTs] = parseDate(a.content)
+          const [bTs] = parseDate(b.content)
+          const tsOrder = bTs.getTime() - aTs.getTime()
+          return tsOrder !== 0
+            ? tsOrder
+            : a.content.localeCompare(b.content, lang)
+        } else {
+          return a.content.localeCompare(b.content, lang)
+        }
+      })
 
     const configs = JSON.parse(
       boardBlock.properties?.configs ?? '{"tagColors": {}}',

@@ -37,5 +37,6 @@
   "days": "天",
   "Save and apply": "保存并应用",
   "Clear and save": "清除并保存",
-  "Automatically archive the cards in the specified list, whose duration is bigger than the specified days.": "自动将指定列表下时长大于指定天数的卡片归档。"
+  "Automatically archive the cards in the specified list, whose duration is bigger than the specified days.": "自动将指定列表下时长大于指定天数的卡片归档。",
+  "Locale used in sorting query results. E.g, zh-CN. Keep it empty to use Logseq's language setting.": "在查询结果排序中所使用到的 locale。例如 zh-CN。留空会使用 Logseq 的语言设置。"
 }
