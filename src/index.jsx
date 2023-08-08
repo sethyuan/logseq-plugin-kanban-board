@@ -1240,13 +1240,19 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
       .flat()
       .filter((block) => !block.name)
       .sort((a, b) => {
-        if ((a.scheduled ?? a.deadline) && (b.scheduled ?? b.deadline)) {
+        const aHasDueDate = a.scheduled ?? a.deadline
+        const bHasDueDate = b.scheduled ?? b.deadline
+        if (aHasDueDate && bHasDueDate) {
           const [aTs] = parseDate(a.content)
           const [bTs] = parseDate(b.content)
           const tsOrder = bTs.getTime() - aTs.getTime()
           return tsOrder !== 0
             ? tsOrder
             : a.content.localeCompare(b.content, lang)
+        } else if (aHasDueDate) {
+          return -1
+        } else if (bHasDueDate) {
+          return 1
         } else {
           return a.content.localeCompare(b.content, lang)
         }
