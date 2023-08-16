@@ -62,7 +62,10 @@ export async function parseContent(content, coverProp = "cover") {
   }
 
   // Remove tags.
-  content = content.replace(/(^|\s)#((\[\[([^\]]|\](?!\]))+\]\])|\S+)/g, "")
+  content = content.replace(
+    /(^|\s)#(?!#)((\[\[([^\]]|\](?!\]))+\]\])|\S+)/g,
+    "",
+  )
 
   // Remove page refs
   content = content.replace(/\[\[([^\]]+)\]\]/g, "$1")
