@@ -49,7 +49,7 @@ export default function KanbanCard({
         return
       }
       const updated = await logseq.Editor.getBlock(block.uuid)
-      if (updated.marker !== block.marker) {
+      if (updated == null || updated.marker !== block.marker) {
         onRefresh()
       } else {
         const [content, tags, props, cover, scheduled, deadline] =
