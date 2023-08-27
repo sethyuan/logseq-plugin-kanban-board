@@ -87,7 +87,7 @@ async function main() {
   logseq.Editor.registerSlashCommand("Kanban Board", () => {
     openRefDialog(async (blockRef, property) => {
       await logseq.Editor.insertAtEditingCursor(
-        `{{renderer :kboard, ${blockRef}, ${property}}}`,
+        `{{renderer :kboard, ${blockRef}, ${property}, cover, 260px}}`,
       )
     })
   })
@@ -96,7 +96,7 @@ async function main() {
     const currentBlock = await logseq.Editor.getCurrentBlock()
     const uuid = await logseq.Editor.newBlockUUID()
     await logseq.Editor.insertAtEditingCursor(
-      `{{renderer :kboard, ${uuid}, list}}`,
+      `{{renderer :kboard, ${uuid}, list, cover, 260px}}`,
     )
     await logseq.Editor.insertBlock(currentBlock.uuid, "Kanban", {
       sibling: true,
@@ -108,8 +108,8 @@ async function main() {
     openQueryDialog(async (name, property, propertyValues) => {
       await logseq.Editor.insertAtEditingCursor(
         propertyValues
-          ? `{{renderer :kboard-query, ${name}, ${property}, ${propertyValues}}}`
-          : `{{renderer :kboard-query, ${name}, ${property}}}`,
+          ? `{{renderer :kboard-query, ${name}, ${property}, ${propertyValues}, cover, 260px}}`
+          : `{{renderer :kboard-query, ${name}, ${property}, cover, 260px}}`,
       )
       const currentBlock = await logseq.Editor.getCurrentBlock()
       await logseq.Editor.insertBlock(
@@ -124,7 +124,7 @@ async function main() {
       preferredWorkflow === "now" ? "LATER, NOW, DONE" : "TODO, DOING, DONE"
     const currentBlock = await logseq.Editor.getCurrentBlock()
     await logseq.Editor.insertAtEditingCursor(
-      `{{renderer :kboard-marker-query, Kanban, ${lists}}}`,
+      `{{renderer :kboard-marker-query, Kanban, ${lists}, cover, 260px}}`,
     )
     await logseq.Editor.insertBlock(
       currentBlock.uuid,
@@ -139,7 +139,7 @@ async function main() {
         await persistBlockUUID(uuid)
         await logseq.Editor.insertBlock(
           uuid,
-          `{{renderer :kboard, ${uuid}, ${property}}}`,
+          `{{renderer :kboard, ${uuid}, ${property}, cover, 260px}}`,
           { sibling: true, before: true },
         )
         await waitMs(50)
@@ -728,7 +728,7 @@ async function kanbanRenderer({ slot, payload: { arguments: args, uuid } }) {
       rootBlock.id,
       key,
       debounce((blocks, txData, txMeta) => {
-        renderKanban(key, uuid, blockRef, property, coverProp)
+        renderKanban(key, uuid, blockRef, property, coverProp, columnWidth)
       }, 300),
     )
     offHooks[key] = offHook
@@ -1118,7 +1118,7 @@ async function renderMarkerQueryKanban(
       coverProp={coverProp}
       columnWidth={columnWidth}
       onRefresh={() =>
-        renderMarkerQueryKanban(id, uuid, name, lists, columnWidth)
+        renderMarkerQueryKanban(id, uuid, name, lists, coverProp, columnWidth)
       }
     />,
     el,
@@ -1146,7 +1146,15 @@ async function renderQueryKanban(
       coverProp={coverProp}
       columnWidth={columnWidth}
       onRefresh={() =>
-        renderQueryKanban(id, uuid, name, list, listValues, columnWidth)
+        renderQueryKanban(
+          id,
+          uuid,
+          name,
+          list,
+          listValues,
+          coverProp,
+          columnWidth,
+        )
       }
     />,
     el,
