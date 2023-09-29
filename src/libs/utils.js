@@ -72,7 +72,7 @@ export async function parseContent(content, coverProp = "cover") {
 
   // Remove marker
   content = content.replace(
-    /^(?:LATER|NOW|TODO|DOING|DONE|WAITING|CANCELED) /g,
+    /^(?:LATER|NOW|TODO|DOING|DONE|WAITING|CANCEL{1,2}ED) /g,
     "",
   )
 
