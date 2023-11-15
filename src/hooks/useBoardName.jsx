@@ -23,7 +23,11 @@ export default function useBoardName(name, uuid) {
     switch (e.key) {
       case "Enter": {
         e.preventDefault()
-        await logseq.Editor.updateBlock(uuid, e.target.value)
+        const block = await logseq.Editor.getBlock(uuid)
+        await logseq.Editor.updateBlock(
+          uuid,
+          block.content.replace(name, e.target.value),
+        )
         setMode(MODE_VIEW)
         break
       }
