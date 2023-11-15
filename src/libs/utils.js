@@ -18,8 +18,8 @@ export async function parseContent(content, coverProp = "cover") {
   const tagsPropIndex = props.findIndex(([k]) => k === "tags")
   if (tagsPropIndex > -1) {
     const [, tagsPropValue] = props[tagsPropIndex]
-    for (const t of tagsPropValue.split(/[,，]/).filter((e) => e)) {
-      tags.add(t.replace(/^\s*\[\[((?:[^\]]|\](?!\]))+)\]\]\s*$/, "$1"))
+    for (const tag of tagsPropValue.split(/[,，]\s*/).filter((t) => t)) {
+      tags.add(tag.replace(/^\s*\[\[((?:[^\]]|\](?!\]))+)\]\]\s*$/, "$1"))
     }
     props.splice(tagsPropIndex, 1)
   }
