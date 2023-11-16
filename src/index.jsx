@@ -294,7 +294,7 @@ function provideStyles() {
       margin-left: 0.8em;
       background: var(--ls-active-secondary-color);
       border-radius: 2px;
-      padding: 1px 7px;
+      padding: 3px 7px;
       color: #fff;
       font-size: 0.85714em;
       vertical-align: middle;
@@ -1173,10 +1173,8 @@ async function getMarkerQueryBoardData(uuid, name, statuses, coverProp) {
     queryBlock.content.match(/\{\{query (.+)\}\}/)?.[1]
   if (!qs) return null
 
-  const allTags = new Set()
-  const lists = {}
-
   try {
+    const lists = {}
     const data = (
       (qs.startsWith("[:find")
         ? await logseq.DB.customQuery(qs)
@@ -1189,6 +1187,7 @@ async function getMarkerQueryBoardData(uuid, name, statuses, coverProp) {
       lists[status] = []
     }
 
+    const allTags = new Set()
     for (const task of data) {
       lists[task.marker].push(task)
 
@@ -1206,6 +1205,7 @@ async function getMarkerQueryBoardData(uuid, name, statuses, coverProp) {
         allTags.add(tag)
       }
     }
+    allTags.delete(".kboard-placeholder")
 
     const configs = JSON.parse(
       boardBlock.properties?.configs ?? '{"tagColors": {}}',
@@ -1246,7 +1246,10 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
         : await logseq.DB.q(qs)) ?? []
     )
       .flat()
-      .filter((block) => !block.name)
+      .filter(
+        (block) =>
+          !block.name && !block.content.includes("#.kboard-placeholder"),
+      )
       .sort((a, b) => {
         const aHasDueDate = a.scheduled ?? a.deadline
         const bHasDueDate = b.scheduled ?? b.deadline
@@ -1303,6 +1306,7 @@ async function getQueryBoardData(uuid, name, list, listValues, coverProp) {
         allTags.add(tag)
       }
     }
+    allTags.delete(".kboard-placeholder")
 
     return {
       name,
