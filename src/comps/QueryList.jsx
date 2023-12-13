@@ -27,8 +27,12 @@ export default function QueryList({
               : provided.draggableProps.style
           }
         >
-          <div class="kef-kb-list-title" {...provided.dragHandleProps}>
-            <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
+          <div
+            class="kef-kb-list-title"
+            {...provided.dragHandleProps}
+            onMouseDown={stopPropagation}
+          >
+            <div class="kef-kb-list-name">
               {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
             </div>
             <div class="kef-kb-list-size">({blocks.length})</div>

@@ -8,8 +8,8 @@ export default function MarkerQueryList({ name, blocks, width, coverProp }) {
 
   return (
     <div class="kef-kb-list" style={width && { width }}>
-      <div class="kef-kb-list-title">
-        <div class="kef-kb-list-name" onMouseDown={stopPropagation}>
+      <div class="kef-kb-list-title" onMouseDown={stopPropagation}>
+        <div class="kef-kb-list-name">
           {name.replace(/\[\[([^\]]+)\]\]/g, "$1")}
         </div>
         <div class="kef-kb-list-size">({blocks.length})</div>
