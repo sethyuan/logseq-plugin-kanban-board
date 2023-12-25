@@ -892,7 +892,7 @@ function watchBlockChildrenChange(id, elID, callback) {
     const predicate = (block) => block.id === id || block.parent?.id === id
     if (
       txMeta &&
-      txMeta.outlinerOp !== "insertBlock" &&
+      txMeta.outlinerOp !== "insert-block" &&
       blocks.some(predicate)
     ) {
       callback(blocks.filter(predicate), txData, txMeta)
